@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Defines all the hooks this module implements.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_manuscript_menu() {
+  return array(
+    'admin/islandora/solution_pack_config/book' => array(
+      'title' => 'Manuscript Solution Pack',
+      'description' => 'Configure the Manuscript Solution Pack.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('islandora_manuscript_admin_settings_form'),
+      'access arguments' => array('administer site configuration'),
+      'file' => 'includes/admin.form.inc',
+      'type' => MENU_NORMAL_ITEM,
+    ),
+  );
+}

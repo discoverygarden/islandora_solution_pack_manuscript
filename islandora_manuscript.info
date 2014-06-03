@@ -1,0 +1,9 @@
+name = "Islandora Manuscript Solution Pack"
+description = "Provides an interface for manuscript objects."
+package = Islandora Solution Packs
+dependencies[] = islandora
+dependencies[] = file
+dependencies[] = islandora_paged_content
+configure = admin/islandora/solution_pack_config/manuscript
+version = 7.x-dev
+core = 7.x
