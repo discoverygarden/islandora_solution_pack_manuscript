@@ -106,3 +106,89 @@ function islandora_manuscript_islandora_required_objects(IslandoraTuque $connect
     ),
   );
 }
+
+/**
+ * Implements hook_islandora_ingest_steps().
+ */
+function islandora_manuscript_islandora_manuscriptinventorycmodel_islandora_ingest_steps() {
+  return array(
+    'islandora_manuscript_ead_upload' => array(
+      'weight' => 10,
+      'type' => 'form',
+      'form_id' => 'islandora_manuscript_ead_upload_form',
+      'module' => 'islandora_manuscript',
+      'file' => 'includes/ead_upload.form.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_ingest_steps().
+ */
+function islandora_manuscript_islandora_manuscriptcmodel_islandora_ingest_steps() {
+  return array(
+    'islandora_manuscript_tei_upload' => array(
+      'weight' => 10,
+      'type' => 'form',
+      'form_id' => 'islandora_manuscript_tei_upload_form',
+      'module' => 'islandora_manuscript',
+      'file' => 'includes/tei_upload.form.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_ingest_steps().
+ */
+function islandora_manuscript_islandora_transformcmodel_islandora_ingest_steps() {
+  return array(
+    'islandora_manuscript_transform_upload' => array(
+      'weight' => 10,
+      'type' => 'form',
+      'form_id' => 'islandora_manuscript_transform_upload_form',
+      'module' => 'islandora_manuscript',
+      'file' => 'includes/transform_upload.form.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_xml_form_builder_get_transforms().
+ *
+ * No default form is defined for EAD, but if someone should add one they can
+ * use this transform.
+ */
+function islandora_manuscript_islandora_xml_form_builder_get_transforms() {
+  $module_path = drupal_get_path('module', 'islandora_manuscript');
+  return array(
+    'ead_to_dc.xsl' => "{$module_path}/data/transforms/ead_to_dc.xsl",
+  );
+}
+
+/**
+ * Implements hook_islandora_content_model_forms_form_associations().
+ */
+function islandora_manuscript_islandora_content_model_forms_form_associations() {
+  return array(
+    'islandora_manuscript_mods_form' => array(
+      'content_model' => 'islandora:manuscriptCModel',
+      'form_name' => 'Manuscript MODS form',
+      'dsid' => 'MODS',
+      'title_field' => array('titleInfo', 'title'),
+      'transform' => 'mods_to_dc.xsl',
+      'template' => FALSE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_xml_form_builder_forms().
+ */
+function islandora_manuscript_islandora_xml_form_builder_forms() {
+  $module_path = drupal_get_path('module', 'islandora_manuscript');
+  return array(
+    'Manuscript MODS form' => array(
+      'form_file' => "$module_path/data/forms/islandora_manuscript_form_mods.xml",
+    ),
+  );
+}
