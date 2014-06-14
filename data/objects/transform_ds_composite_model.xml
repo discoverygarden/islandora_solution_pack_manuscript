@@ -1,0 +1,21 @@
+<dsCompositeModel xmlns="info:fedora/fedora-system:def/dsCompositeModel#">
+  <dsTypeModel ID="DC">
+    <form FORMAT_URI="http://www.openarchives.org/OAI/2.0/oai_dc/" MIME="text/xml"/>
+  </dsTypeModel>
+  <dsTypeModel ID="RELS-EXT" optional="true">
+    <form FORMAT_URI="info:fedora/fedora-system:FedoraRELSExt-1.0" MIME="application/rdf+xml"/>
+  </dsTypeModel>
+  <dsTypeModel ID="RELS-INT" optional="true">
+    <form FORMAT_URI="info:fedora/fedora-system:FedoraRELSInt-1.0" MIME="application/rdf+xml"/>
+  </dsTypeModel>
+  <!--
+  Adopted 'text/xsl' as the newer registered mime-types 'application/xslt+xml'
+  isn't as widely supported: http://en.wikipedia.org/wiki/XSLT#XSLT_media_types
+   -->
+  <dsTypeModel ID="XSLT" optional="false">
+    <form MIME="text/xsl"/>
+  </dsTypeModel>
+  <dsTypeModel ID="CSS" optional="true">
+    <form MIME="text/css"/>
+  </dsTypeModel>
+</dsCompositeModel>

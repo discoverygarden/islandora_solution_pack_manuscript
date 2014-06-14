@@ -21,3 +21,88 @@ function islandora_manuscript_menu() {
     ),
   );
 }
+
+/**
+ * Implements hook_islandora_required_objects().
+ */
+function islandora_manuscript_islandora_required_objects(IslandoraTuque $connection) {
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
+  $module_path = drupal_get_path('module', 'islandora_manuscript');
+  // Manuscript Inventory Content Model.
+  $manuscript_inventory_content_model = islandora_solution_pack_create_required_object($connection, array(
+    'pid' => 'islandora:manuscriptInventoryCModel',
+    'label' => 'Manuscript Inventory Content Model',
+    'model' => 'fedora-system:ContentModel-3.0',
+    'datastreams' => array(
+      'DS-COMPOSITE-MODEL' => array(
+        'file' => "$module_path/data/objects/manuscript_inventory_ds_composite_model.xml",
+      ),
+    ),
+  ));
+  // Manuscript Content Model.
+  $manuscript_content_model = islandora_solution_pack_create_required_object($connection, array(
+    'pid' => 'islandora:manuscriptCModel',
+    'label' => 'Manuscript Content Model',
+    'model' => 'fedora-system:ContentModel-3.0',
+    'datastreams' => array(
+      'DS-COMPOSITE-MODEL' => array(
+        'file' => "$module_path/data/objects/manuscript_ds_composite_model.xml",
+      ),
+    ),
+  ));
+  // Manuscript Content Model.
+  $transform_content_model = islandora_solution_pack_create_required_object($connection, array(
+    'pid' => 'islandora:transformCModel',
+    'label' => 'Transform Content Model',
+    'model' => 'fedora-system:ContentModel-3.0',
+    'datastreams' => array(
+      'DS-COMPOSITE-MODEL' => array(
+        'file' => "$module_path/data/objects/transform_ds_composite_model.xml",
+      ),
+    ),
+  ));
+  // Manuscript Inventory Collection.
+  $manuscript_collection = islandora_solution_pack_create_required_object($connection, array(
+    'pid' => 'islandora:manuscriptCollection',
+    'label' => 'Manuscript Collection',
+    'model' => 'islandora:collectionCModel',
+    'datastreams' => array(
+      'TN' => array(
+        'file' => "$module_path/images/folder.png",
+        'mimetype' => 'image/png',
+      ),
+      'COLLECTION_POLICY' => array(
+        'file' => "$module_path/data/objects/manuscript_collection_policy.xml",
+      ),
+    ),
+  ));
+  $manuscript_collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
+  // Transform Collection.
+  $transform_collection = islandora_solution_pack_create_required_object($connection, array(
+    'pid' => 'islandora:transformCollection',
+    'label' => 'Transform Collection',
+    'model' => 'islandora:collectionCModel',
+    'datastreams' => array(
+      'TN' => array(
+        'file' => "$module_path/images/folder.png",
+        'mimetype' => 'image/png',
+      ),
+      'COLLECTION_POLICY' => array(
+        'file' => "$module_path/data/objects/transform_collection_policy.xml",
+      ),
+    ),
+  ));
+  $transform_collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
+  return array(
+    'islandora_manuscript' => array(
+      'title' => 'Islandora Manuscript Solution Pack',
+      'objects' => array(
+        $manuscript_inventory_content_model,
+        $manuscript_content_model,
+        $transform_content_model,
+        $manuscript_collection,
+        $transform_collection,
+      ),
+    ),
+  );
+}
