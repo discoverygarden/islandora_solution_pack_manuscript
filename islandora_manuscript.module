@@ -10,7 +10,7 @@
  */
 function islandora_manuscript_menu() {
   return array(
-    'admin/islandora/solution_pack_config/book' => array(
+    'admin/islandora/solution_pack_config/manuscript' => array(
       'title' => 'Manuscript Solution Pack',
       'description' => 'Configure the Manuscript Solution Pack.',
       'page callback' => 'drupal_get_form',
