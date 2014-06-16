@@ -100,10 +100,29 @@ function islandora_manuscript_theme() {
  * Implements hook_islandora_required_objects().
  */
 function islandora_manuscript_islandora_required_objects(IslandoraTuque $connection) {
-  module_load_include('inc', 'islandora', 'includes/solution_packs');
   $module_path = drupal_get_path('module', 'islandora_manuscript');
+  // Convenience Method to construct an object.
+  $create_object = function (IslandoraTuque $connection, array $args) {
+    $object = $connection->repository->constructObject($args['pid']);
+    $object->owner = 'fedoraAdmin';
+    $object->label = $args['label'];
+    foreach ($args['datastreams'] as $dsid => $properties) {
+      $control_group = isset($properties['control_group']) ? $properties['control_group'] : 'M';
+      $datastream = $object->constructDatastream($dsid, $control_group);
+      $datastream->label = isset($properties['label']) ? $properties['label'] : $dsid;
+      $datastream->mimetype = isset($properties['mimetype']) ? $properties['mimetype'] : 'text/xml';
+      $datastream->setContentFromFile($properties['file'], FALSE);
+      $object->ingestDatastream($datastream);
+    }
+    // We must set the model after the datastreams as Tuque will ignore the
+    // RELS-EXT content if the model is set first.
+    if (isset($args['model'])) {
+      $object->models = $args['model'];
+    }
+    return $object;
+  };
   // Manuscript Inventory Content Model.
-  $manuscript_inventory_content_model = islandora_solution_pack_create_required_object($connection, array(
+  $manuscript_inventory_content_model = $create_object($connection, array(
     'pid' => 'islandora:manuscriptInventoryCModel',
     'label' => 'Manuscript Inventory Content Model',
     'model' => 'fedora-system:ContentModel-3.0',
@@ -114,7 +133,7 @@ function islandora_manuscript_islandora_required_objects(IslandoraTuque $connect
     ),
   ));
   // Manuscript Content Model.
-  $manuscript_content_model = islandora_solution_pack_create_required_object($connection, array(
+  $manuscript_content_model = $create_object($connection, array(
     'pid' => 'islandora:manuscriptCModel',
     'label' => 'Manuscript Content Model',
     'model' => 'fedora-system:ContentModel-3.0',
@@ -125,7 +144,7 @@ function islandora_manuscript_islandora_required_objects(IslandoraTuque $connect
     ),
   ));
   // Manuscript Page Content Model.
-  $manuscript_page_content_model = islandora_solution_pack_create_required_object($connection, array(
+  $manuscript_page_content_model = $create_object($connection, array(
     'pid' => 'islandora:manuscriptPageCModel',
     'label' => 'Manuscript Page Content Model',
     'model' => 'fedora-system:ContentModel-3.0',
@@ -136,7 +155,7 @@ function islandora_manuscript_islandora_required_objects(IslandoraTuque $connect
     ),
   ));
   // Transform Content Model.
-  $transform_content_model = islandora_solution_pack_create_required_object($connection, array(
+  $transform_content_model = $create_object($connection, array(
     'pid' => 'islandora:transformCModel',
     'label' => 'Transform Content Model',
     'model' => 'fedora-system:ContentModel-3.0',
@@ -147,7 +166,7 @@ function islandora_manuscript_islandora_required_objects(IslandoraTuque $connect
     ),
   ));
   // Manuscript / Manuscript Inventory Collection.
-  $manuscript_collection = islandora_solution_pack_create_required_object($connection, array(
+  $manuscript_collection = $create_object($connection, array(
     'pid' => 'islandora:manuscriptCollection',
     'label' => 'Manuscript Collection',
     'model' => 'islandora:collectionCModel',
@@ -163,7 +182,7 @@ function islandora_manuscript_islandora_required_objects(IslandoraTuque $connect
   ));
   $manuscript_collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
   // Transform Collection.
-  $transform_collection = islandora_solution_pack_create_required_object($connection, array(
+  $transform_collection = $create_object($connection, array(
     'pid' => 'islandora:transformCollection',
     'label' => 'Transform Collection',
     'model' => 'islandora:collectionCModel',
