@@ -10,7 +10,7 @@
  */
 function islandora_manuscript_menu() {
   return array(
-    'admin/islandora/solution_pack_config/book' => array(
+    'admin/islandora/solution_pack_config/manuscript' => array(
       'title' => 'Manuscript Solution Pack',
       'description' => 'Configure the Manuscript Solution Pack.',
       'page callback' => 'drupal_get_form',
@@ -19,5 +19,333 @@ function islandora_manuscript_menu() {
       'file' => 'includes/admin.form.inc',
       'type' => MENU_NORMAL_ITEM,
     ),
+    'islandora/object/%islandora_object/manuscript/pages' => array(
+      'title' => 'Pages',
+      'type' => MENU_LOCAL_TASK,
+      'page callback' => 'islandora_manuscript_pages_menu',
+      'page arguments' => array(2),
+      'access callback' => 'islandora_user_access',
+      'access arguments' => array(
+        2, array(ISLANDORA_VIEW_OBJECTS), array('islandora:manuscriptCModel'),
+      ),
+    ),
+    'islandora/object/%islandora_object/manage/manuscript' => array(
+      'title' => 'Manuscript',
+      'type' => MENU_LOCAL_TASK,
+      'page callback' => 'islandora_paged_content_manage_pages_menu',
+      'page arguments' => array(2),
+      'access callback' => 'islandora_paged_content_manage_pages_access_callback',
+      'access arguments' => array(2, array('islandora:manuscriptCModel')),
+      'file path' => drupal_get_path('module', 'islandora_paged_content'),
+      'file' => 'includes/manage_pages.inc',
+    ),
+    'islandora/object/%islandora_object/manage/manuscript/ingest' => array(
+      'title' => 'Add Page',
+      'page callback' => 'islandora_manuscript_ingest_page',
+      'page arguments' => array(2),
+      'type' => MENU_LOCAL_ACTION,
+      'access callback' => 'islandora_object_access',
+      'access arguments' => array(ISLANDORA_INGEST, 2),
+      'file' => 'includes/manage_manuscript.inc',
+    ),
+    'islandora/object/%islandora_object/manage/manuscript_page' => array(
+      'title' => 'Page',
+      'type' => MENU_LOCAL_TASK,
+      'page callback' => 'islandora_paged_content_manage_page_menu',
+      'page arguments' => array(2),
+      'access callback' => 'islandora_paged_content_manage_page_access_callback',
+      'access arguments' => array(2, array('islandora:manuscriptPageCModel')),
+      'file path' => drupal_get_path('module', 'islandora_paged_content'),
+      'file' => 'includes/manage_page.inc',
+    ),
   );
+}
+
+/**
+ * Renders the Pages local menu task.
+ *
+ * @param AbstractObject $object
+ *   The book object to fetch the pages from.
+ *
+ * @return string
+ *   The HTML representation of the given books pages.
+ */
+function islandora_manuscript_pages_menu(AbstractObject $object) {
+  module_load_include('inc', 'islandora', 'includes/breadcrumb');
+  drupal_set_breadcrumb(islandora_get_breadcrumbs($object));
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $pages = islandora_paged_content_get_pages($object);
+  return theme('islandora_objects', array('objects' => array_keys($pages)));
+}
+
+/**
+ * Implements hook_theme().
+ */
+function islandora_manuscript_theme() {
+  return array(
+    'islandora_manuscript_manuscript' => array(
+      'variables' => array('object' => NULL),
+      'file' => 'theme/theme.inc',
+      'template' => 'theme/islandora-manuscript-manuscript',
+    ),
+    'islandora_manuscript_page' => array(
+      'arguments' => array('object' => NULL),
+      'file' => 'theme/theme.inc',
+      'template' => 'theme/islandora-manuscript-page',
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_required_objects().
+ */
+function islandora_manuscript_islandora_required_objects(IslandoraTuque $connection) {
+  $module_path = drupal_get_path('module', 'islandora_manuscript');
+  // Convenience Method to construct an object.
+  $create_object = function (IslandoraTuque $connection, array $args) {
+    $object = $connection->repository->constructObject($args['pid']);
+    $object->owner = 'fedoraAdmin';
+    $object->label = $args['label'];
+    foreach ($args['datastreams'] as $dsid => $properties) {
+      $control_group = isset($properties['control_group']) ? $properties['control_group'] : 'M';
+      $datastream = $object->constructDatastream($dsid, $control_group);
+      $datastream->label = isset($properties['label']) ? $properties['label'] : $dsid;
+      $datastream->mimetype = isset($properties['mimetype']) ? $properties['mimetype'] : 'text/xml';
+      $datastream->setContentFromFile($properties['file'], FALSE);
+      $object->ingestDatastream($datastream);
+    }
+    // We must set the model after the datastreams as Tuque will ignore the
+    // RELS-EXT content if the model is set first.
+    if (isset($args['model'])) {
+      $object->models = $args['model'];
+    }
+    return $object;
+  };
+  // Manuscript Inventory Content Model.
+  $manuscript_inventory_content_model = $create_object($connection, array(
+    'pid' => 'islandora:manuscriptInventoryCModel',
+    'label' => 'Manuscript Inventory Content Model',
+    'model' => 'fedora-system:ContentModel-3.0',
+    'datastreams' => array(
+      'DS-COMPOSITE-MODEL' => array(
+        'file' => "$module_path/data/objects/manuscript_inventory_ds_composite_model.xml",
+      ),
+    ),
+  ));
+  // Manuscript Content Model.
+  $manuscript_content_model = $create_object($connection, array(
+    'pid' => 'islandora:manuscriptCModel',
+    'label' => 'Manuscript Content Model',
+    'model' => 'fedora-system:ContentModel-3.0',
+    'datastreams' => array(
+      'DS-COMPOSITE-MODEL' => array(
+        'file' => "$module_path/data/objects/manuscript_ds_composite_model.xml",
+      ),
+    ),
+  ));
+  // Manuscript Page Content Model.
+  $manuscript_page_content_model = $create_object($connection, array(
+    'pid' => 'islandora:manuscriptPageCModel',
+    'label' => 'Manuscript Page Content Model',
+    'model' => 'fedora-system:ContentModel-3.0',
+    'datastreams' => array(
+      'DS-COMPOSITE-MODEL' => array(
+        'file' => drupal_get_path('module', 'islandora_paged_content') . '/xml/islandora_pageCModel_ds_composite_model.xml',
+      ),
+    ),
+  ));
+  // Transform Content Model.
+  $transform_content_model = $create_object($connection, array(
+    'pid' => 'islandora:transformCModel',
+    'label' => 'Transform Content Model',
+    'model' => 'fedora-system:ContentModel-3.0',
+    'datastreams' => array(
+      'DS-COMPOSITE-MODEL' => array(
+        'file' => "$module_path/data/objects/transform_ds_composite_model.xml",
+      ),
+    ),
+  ));
+  // Manuscript / Manuscript Inventory Collection.
+  $manuscript_collection = $create_object($connection, array(
+    'pid' => 'islandora:manuscriptCollection',
+    'label' => 'Manuscript Collection',
+    'model' => 'islandora:collectionCModel',
+    'datastreams' => array(
+      'TN' => array(
+        'file' => "$module_path/images/folder.png",
+        'mimetype' => 'image/png',
+      ),
+      'COLLECTION_POLICY' => array(
+        'file' => "$module_path/data/objects/manuscript_collection_policy.xml",
+      ),
+    ),
+  ));
+  $manuscript_collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
+  // Transform Collection.
+  $transform_collection = $create_object($connection, array(
+    'pid' => 'islandora:transformCollection',
+    'label' => 'Transform Collection',
+    'model' => 'islandora:collectionCModel',
+    'datastreams' => array(
+      'TN' => array(
+        'file' => "$module_path/images/folder.png",
+        'mimetype' => 'image/png',
+      ),
+      'COLLECTION_POLICY' => array(
+        'file' => "$module_path/data/objects/transform_collection_policy.xml",
+      ),
+    ),
+  ));
+  $transform_collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
+  return array(
+    'islandora_manuscript' => array(
+      'title' => 'Islandora Manuscript Solution Pack',
+      'objects' => array(
+        $manuscript_inventory_content_model,
+        $manuscript_content_model,
+        $manuscript_page_content_model,
+        $transform_content_model,
+        $manuscript_collection,
+        $transform_collection,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_ingest_steps().
+ */
+function islandora_manuscript_islandora_manuscriptinventorycmodel_islandora_ingest_steps() {
+  return array(
+    'islandora_manuscript_ead_upload' => array(
+      'weight' => 10,
+      'type' => 'form',
+      'form_id' => 'islandora_manuscript_ead_upload_form',
+      'module' => 'islandora_manuscript',
+      'file' => 'includes/ead_upload.form.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_ingest_steps().
+ */
+function islandora_manuscript_islandora_manuscriptcmodel_islandora_ingest_steps() {
+  return array(
+    'islandora_manuscript_tei_upload' => array(
+      'weight' => 10,
+      'type' => 'form',
+      'form_id' => 'islandora_manuscript_tei_upload_form',
+      'module' => 'islandora_manuscript',
+      'file' => 'includes/tei_upload.form.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_ingest_steps().
+ */
+function islandora_manuscript_islandora_transformcmodel_islandora_ingest_steps() {
+  return array(
+    'islandora_manuscript_transform_upload' => array(
+      'weight' => 10,
+      'type' => 'form',
+      'form_id' => 'islandora_manuscript_transform_upload_form',
+      'module' => 'islandora_manuscript',
+      'file' => 'includes/transform_upload.form.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_xml_form_builder_get_transforms().
+ *
+ * No default form is defined for EAD, but if someone should add one they can
+ * use this transform.
+ */
+function islandora_manuscript_islandora_xml_form_builder_get_transforms() {
+  $module_path = drupal_get_path('module', 'islandora_manuscript');
+  return array(
+    'ead_to_dc.xsl' => "{$module_path}/data/transforms/ead_to_dc.xsl",
+  );
+}
+
+/**
+ * Implements hook_islandora_content_model_forms_form_associations().
+ */
+function islandora_manuscript_islandora_xml_form_builder_form_associations() {
+  return array(
+    'islandora_manuscript_mods_form' => array(
+      'content_model' => 'islandora:manuscriptCModel',
+      'form_name' => 'Manuscript MODS form',
+      'dsid' => 'MODS',
+      'title_field' => array('titleInfo', 'title'),
+      'transform' => 'mods_to_dc.xsl',
+      'template' => FALSE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_xml_form_builder_forms().
+ */
+function islandora_manuscript_islandora_xml_form_builder_forms() {
+  $module_path = drupal_get_path('module', 'islandora_manuscript');
+  return array(
+    'Manuscript MODS form' => array(
+      'form_file' => "$module_path/data/forms/islandora_manuscript_form_mods.xml",
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_ingest_steps().
+ */
+function islandora_manuscript_islandora_manuscriptpagecmodel_islandora_ingest_steps(array $form_state) {
+  $shared_storage = islandora_ingest_form_get_shared_storage($form_state);
+  if (empty($shared_storage['manuscript'])) {
+    return;
+  }
+  return array(
+    'islandora_manuscript_upload_pages' => array(
+      'weight' => 10,
+      'type' => 'form',
+      'form_id' => 'islandora_paged_content_upload_page_form',
+      'args' => array($shared_storage['manuscript']),
+      'module' => 'islandora_paged_content',
+      'file' => 'includes/upload_page.form.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_derivative().
+ */
+function islandora_manuscript_islandora_manuscriptcmodel_islandora_derivative() {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  return islandora_paged_content_paged_object_derivatives('islandora_manuscript');
+}
+
+/**
+ * Implements hook_islandora_derivative().
+ */
+function islandora_manuscript_islandora_manuscriptpagecmodel_islandora_derivative() {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  return islandora_paged_content_page_derivatives('islandora_manuscript');
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_view_object().
+ */
+function islandora_manuscript_islandora_manuscriptcmodel_islandora_view_object($object) {
+  $output = theme('islandora_manuscript_manuscript', array('object' => $object));
+  return array('islandora_manuscript' => $output);
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_view_object().
+ */
+function islandora_book_islandora_manuscriptpagecmodel_islandora_view_object($object, $page_number, $page_size) {
+  $output = theme('islandora_manuscript_page', array('object' => $object));
+  return array('islandora_manuscript' => $output);
 }
