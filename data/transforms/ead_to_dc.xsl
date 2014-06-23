@@ -15,38 +15,39 @@
 	This transform is for describing the finding aid only, it doesn't attempt to generate DC for the archival material.
 	-->
   <xsl:output method="xml" indent="yes"/>
-  
   <xsl:template match="/">
     <oai_dc:dc xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
       <dc:type>archival finding aid</dc:type>
       <xsl:apply-templates/>
     </oai_dc:dc>
   </xsl:template>
-  
   <xsl:template match="ead:titleproper">
-    <dc:title><xsl:value-of select="."/></dc:title>
+    <dc:title><xsl:value-of select='normalize-space()'/></dc:title>
   </xsl:template>
-  <xsl:template match="ead:notestmt/ead:note">
-    <dc:description><xsl:value-of select="."/></dc:description>
-  </xsl:template>
-  <xsl:template match="ead:notestmt/ead:subject">
-    <dc:subject><xsl:value-of select="."/></dc:subject>
+  <xsl:template match="ead:notestmt">
+    <!-- Each note is a seperate description. -->
+    <xsl:for-each select="//ead:note">
+      <dc:description><xsl:value-of select='normalize-space()'/></dc:description>
+    </xsl:for-each>
+    <!-- Catch subject that are at any level within the ead:notestmt. -->
+    <xsl:for-each select="//ead:subject">
+      <dc:subject><xsl:value-of select='normalize-space()'/></dc:subject>
+    </xsl:for-each>
   </xsl:template>
   <xsl:template match="ead:author">
-    <dc:creator><xsl:value-of select="."/></dc:creator>
-    <dc:contributor><xsl:value-of select="."/></dc:contributor>
+    <dc:creator><xsl:value-of select='normalize-space()'/></dc:creator>
   </xsl:template>
   <xsl:template match="ead:publisher">
-    <dc:publisher><xsl:value-of select="."/></dc:publisher>
+    <dc:publisher><xsl:value-of select='normalize-space()'/></dc:publisher>
   </xsl:template>
   <xsl:template match="ead:publicationstmt/ead:date">
-    <dc:date><xsl:value-of select="."/></dc:date>
+    <dc:date><xsl:value-of select='normalize-space()'/></dc:date>
   </xsl:template>
   <xsl:template match="ead:eadid">
-    <dc:identifier><xsl:value-of select="."/></dc:identifier>
+    <dc:identifier><xsl:value-of select='normalize-space()'/></dc:identifier>
   </xsl:template>
-  <xsl:template match="ead:language">
-    <dc:language><xsl:value-of select="."/></dc:language>
+  <xsl:template match="ead:language[@langcode]">
+    <dc:language><xsl:value-of select='normalize-space(@langcode)'/></dc:language>
   </xsl:template>
   <!-- Recurse Accept for the archival section -->
   <xsl:template match="ead:archdesc"/>
