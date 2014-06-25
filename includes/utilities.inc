@@ -6,6 +6,97 @@
  */
 
 /**
+ * Set the related transform for an object.
+ *
+ * @param AbstractObject $object
+ *   The object to set the relation on.
+ * @param string $transform_pid
+ *   The PID to set the relation to.
+ */
+function islandora_manuscript_set_transform(AbstractObject $object, $transform_pid) {
+  $relations = $object->relationships;
+  $relations->autoCommit = FALSE;
+
+  islandora_manuscript_remove_transform($object);
+  $relations->add(
+    ISLANDORA_RELS_EXT_URI,
+    ISLANDORA_MANUSCRIPTI_HAS_TRANSFORM_PREDICATE,
+    $transform_pid
+  );
+
+  $relations->commitRelationships();
+}
+
+/**
+ * Remove the related transform for an object.
+ *
+ * @param AbstractObject $object
+ *   The object to remove the relation from.
+ */
+function islandora_manuscript_remove_transform(AbstractObject $object) {
+  $relations = $object->relationships;
+  $relations->remove(
+    ISLANDORA_RELS_EXT_URI,
+    ISLANDORA_MANUSCRIPTI_HAS_TRANSFORM_PREDICATE
+  );
+}
+
+/**
+ * Get the associated transform.
+ *
+ * @param AbstractObject $object
+ *   The object to get the transform for.
+ *
+ * @return mixed
+ *   The PID of the transform object associated with this object.
+ *   FALSE if there is not one.
+ */
+function islandora_manuscript_get_transform_pid($object) {
+  $retrieved_rel = $object->relationships->get(
+    ISLANDORA_RELS_EXT_URI,
+    ISLANDORA_MANUSCRIPTI_HAS_TRANSFORM_PREDICATE
+  );
+  if ($retrieved_rel) {
+    $reset_rel = reset($retrieved_rel);
+    return $reset_rel['object']['value'];
+  }
+  return FALSE;
+}
+
+/**
+ * Get all transforms.
+ *
+ * @return array
+ *   A list of all transform objects.
+ */
+function islandora_manuscript_get_transforms() {
+  $tuque = islandora_get_tuque_connection();
+  $query = <<<EOQ
+  PREFIX dc: <http://purl.org/dc/elements/1.1/>
+  SELECT ?transform ?label ?description
+  FROM <#ri>
+  WHERE {
+    ?transform <fedora-model:hasModel> <info:fedora/islandora:transformCModel>
+    OPTIONAL {
+      ?transform <fedora-model:label> ?label
+    }
+    OPTIONAL {
+      ?transform dc:description ?description
+    }
+  }
+EOQ;
+  $raw_results = $tuque->repository->ri->sparqlQuery($query);
+  $results = array();
+  foreach ($raw_results as $result) {
+    $results[$result['transform']['value']] = array(
+      'description' => isset($result['description']['value']) ? $result['description']['value'] : '',
+      'label' => isset($result['label']['value']) ? $result['label']['value'] : NULL,
+    );
+  }
+  return $results;
+}
+
+/**
  * Converts the given EAD document from the DTD format to the W3C Schema format.
  *
  * @param DOMDocument $doc
