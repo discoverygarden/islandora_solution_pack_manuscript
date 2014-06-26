@@ -22,6 +22,17 @@ function islandora_manuscript_menu() {
       'file' => 'includes/admin.form.inc',
       'type' => MENU_NORMAL_ITEM,
     ),
+    'islandora/object/%islandora_object/manuscript/manuscripts' => array(
+      'title' => 'Manuscripts',
+      'page callback' => 'islandora_manuscript_list_manuscripts',
+      'page arguments' => array(2),
+      'access callback' => 'islandora_user_access',
+      'access arguments' => array(
+        2, array(ISLANDORA_VIEW_OBJECTS), array('islandora:manuscriptInventoryCModel'),
+      ),
+      'file' => 'includes/manuscript_list.inc',
+      'type' => MENU_LOCAL_TASK,
+    ),
     'islandora/object/%islandora_object/manuscript/pages' => array(
       'title' => 'Pages',
       'type' => MENU_LOCAL_TASK,
