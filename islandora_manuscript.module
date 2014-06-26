@@ -76,7 +76,7 @@ function islandora_manuscript_menu() {
       'page arguments' => array(2,
         array('tif', 'tiff', 'jpg', 'jpeg', 'jp2'),
         'islandora:manuscriptPageCModel',
-        variable_get('islandora_newspaper_ingest_derivatives', array('ocr')),
+        variable_get('islandora_manuscript_ingest_derivatives', array('ocr')),
       ),
       'type' => MENU_LOCAL_ACTION,
       'access callback' => 'islandora_object_access',
