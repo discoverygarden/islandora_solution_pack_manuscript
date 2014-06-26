@@ -23,7 +23,7 @@ function islandora_manuscript_islandora_delete_object_form_submit(array $form, a
       'error_message' => t('An error has occurred.'),
       'file' => drupal_get_path('module', 'islandora_manuscript') . '/includes/delete.form.inc',
       'title' => t('Removing relations to @object', $message_parameters),
-      'init_message' => t('Preparing to remove realtions to @object', $message_parameters),
+      'init_message' => t('Preparing to remove relations to @object', $message_parameters),
       'operations' => array(
         array(
           'islandora_manuscript_remove_associations_batch_operation',
