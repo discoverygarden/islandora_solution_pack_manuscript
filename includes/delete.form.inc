@@ -51,7 +51,7 @@ function islandora_manuscript_remove_associations_batch_operation($transform_pid
   $tuque = islandora_get_tuque_connection();
   $resource_index = $tuque->repository->ri;
   $islandora_namespace = ISLANDORA_RELS_EXT_URI;
-  $transform_predicate = ISLANDORA_MANUSCRIPTI_HAS_TRANSFORM_PREDICATE;
+  $transform_predicate = ISLANDORA_MANUSCRIPT_HAS_TRANSFORM_PREDICATE;
   $step = 10;
   $query = <<<EOQ
   PREFIX islandora: <$islandora_namespace>

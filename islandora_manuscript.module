@@ -6,7 +6,7 @@
  */
 
 // Predicates.
-define('ISLANDORA_MANUSCRIPTI_HAS_TRANSFORM_PREDICATE', 'has_transform');
+define('ISLANDORA_MANUSCRIPT_HAS_TRANSFORM_PREDICATE', 'hasTransform');
 
 /**
  * Implements hook_menu().

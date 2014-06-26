@@ -20,7 +20,7 @@ function islandora_manuscript_set_transform(AbstractObject $object, $transform_p
   islandora_manuscript_remove_transform($object);
   $relations->add(
     ISLANDORA_RELS_EXT_URI,
-    ISLANDORA_MANUSCRIPTI_HAS_TRANSFORM_PREDICATE,
+    ISLANDORA_MANUSCRIPT_HAS_TRANSFORM_PREDICATE,
     $transform_pid
   );
 
@@ -37,7 +37,7 @@ function islandora_manuscript_remove_transform(AbstractObject $object) {
   $relations = $object->relationships;
   $relations->remove(
     ISLANDORA_RELS_EXT_URI,
-    ISLANDORA_MANUSCRIPTI_HAS_TRANSFORM_PREDICATE
+    ISLANDORA_MANUSCRIPT_HAS_TRANSFORM_PREDICATE
   );
 }
 
@@ -54,7 +54,7 @@ function islandora_manuscript_remove_transform(AbstractObject $object) {
 function islandora_manuscript_get_transform_pid($object) {
   $retrieved_rel = $object->relationships->get(
     ISLANDORA_RELS_EXT_URI,
-    ISLANDORA_MANUSCRIPTI_HAS_TRANSFORM_PREDICATE
+    ISLANDORA_MANUSCRIPT_HAS_TRANSFORM_PREDICATE
   );
   if ($retrieved_rel) {
     $reset_rel = reset($retrieved_rel);
