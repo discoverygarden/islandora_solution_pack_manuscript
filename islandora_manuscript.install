@@ -21,6 +21,6 @@ function islandora_manuscript_install() {
 function islandora_manuscript_uninstall() {
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   islandora_install_solution_pack('islandora_manuscript', 'uninstall');
-  $variables = array();
+  $variables = array('islandora_manuscript_ingest_derivatives');
   array_walk($variables, 'variable_del');
 }
