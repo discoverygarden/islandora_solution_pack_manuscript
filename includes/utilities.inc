@@ -34,14 +34,15 @@ function islandora_manuscript_get_manuscript_transform_object(AbstractObject $ma
       }
     }
 EOQ;
-  $raw_results = reset($manuscript_object->repository->ri->sparqlQuery($query));
-  if ($raw_results['ead']['value']) {
-    $transform_pid = $raw_results['ead_transform']['value'];
+  $raw_results = $manuscript_object->repository->ri->sparqlQuery($query);
+  $result = reset($raw_results);
+  if ($result['ead']['value']) {
+    $transform_pid = $result['ead_transform']['value'];
   }
-  elseif ($raw_results['collection']['value']) {
-    $transform_pid = $raw_results['collection_transform']['value'];
+  elseif ($result['collection']['value']) {
+    $transform_pid = $result['collection_transform']['value'];
   }
-  if (isset($transform_inheritee)) {
+  if (isset($transform_pid)) {
     return islandora_object_load($transform_pid);
   }
   return FALSE;
