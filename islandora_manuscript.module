@@ -7,6 +7,7 @@
 
 // Predicates.
 define('ISLANDORA_MANUSCRIPT_HAS_TRANSFORM_PREDICATE', 'hasTransform');
+define('ISLANDORA_MANUSCRIPT_HAS_EAD_PREDICATE', 'isMemberOf');
 
 /**
  * Implements hook_menu().
