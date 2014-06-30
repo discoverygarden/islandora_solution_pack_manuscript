@@ -397,3 +397,20 @@ function islandora_manuscript_form_islandora_delete_object_form_alter(array &$fo
     $form['#submit'] = array('islandora_manuscript_islandora_delete_object_form_submit');
   }
 }
+
+/**
+ * Implements hook_file_mimetype_mapping_alter().
+ */
+function islandora_manuscript_file_mimetype_mapping_alter(&$mapping) {
+  $mime_detect = new MimeDetect();
+  $types = $mime_detect->getMimeTypes();
+  $intersect = array_intersect_key($types, $mapping['extensions']);
+  foreach ($intersect as $ext => $mime) {
+    $keys = array_keys($mapping['mimetypes'], $mime);
+    if (empty($keys)) {
+      $mapping['mimetypes'][] = $mime;
+      $keys = array_keys($mapping['mimetypes'], $mime);
+    }
+    $mapping['extensions'][$ext] = reset($keys);
+  }
+}
