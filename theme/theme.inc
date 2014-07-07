@@ -69,6 +69,12 @@ function islandora_manuscript_preprocess_islandora_manuscript_page(array &$varia
  *   - xslt_doc: A DOMDocument containing the parsed XSLT to run.
  */
 function template_preprocess_islandora_manuscript_ead_display(&$variables) {
+  $variables['xslt_parameters'][''] = (isset($variables['xslt_parameters']['']) ? $variables['xslt_parameters'][''] : array()) + array(
+    "toc_string" => t('Table of Contents'),
+    "container_string" => t('Containers'),
+    "date_string" => t('Date'),
+    "top_string" => t('Top'),
+  );
   $variables['doc'] = $doc = new DOMDocument();
   $doc->loadXML($variables['object']['EAD']->content);
   $variables['xslt_doc'] = $xslt_doc = new DOMDocument();
