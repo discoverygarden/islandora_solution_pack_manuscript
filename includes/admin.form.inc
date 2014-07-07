@@ -50,6 +50,20 @@ function islandora_manuscript_admin_settings_form(array $form, array &$form_stat
     '#default_value' => variable_get('islandora_manuscript_parent_manuscript_solr_field', 'RELS_EXT_isMemberOf_uri_ms'),
     '#size' => 30,
   );
+  $form['islandora_manuscript_box_identifier_solr_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Manuscript Box Solr Field'),
+    '#description' => t("Solr field containing the box identifier, on manuscript objects."),
+    '#default_value' => variable_get('islandora_manuscript_box_identifier_solr_field', 'mods_relatedItem_host_identifier_box_ms'),
+    '#size' => 30,
+  );
+  $form['islandora_manuscript_folder_identifier_solr_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Manuscript Folder Solr Field'),
+    '#description' => t("Solr field containing the folder identifier, on manuscript objects."),
+    '#default_value' => variable_get('islandora_manuscript_folder_identifier_solr_field', 'mods_relatedItem_host_identifier_folder_ms'),
+    '#size' => 30,
+  );
 
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   $form += islandora_viewers_form('islandora_manuscript_viewers', NULL, 'islandora:manuscriptCModel');
