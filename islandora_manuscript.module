@@ -150,11 +150,6 @@ function islandora_manuscript_theme() {
         ),
         'doc' => NULL,
         'xslt_doc' => NULL,
-        'attributes' => array(
-          'class' => array(
-            'islandora-manuscript-ead-display',
-          ),
-        ),
       ),
       'file' => 'theme/theme.inc',
       'template' => 'theme/islandora-manuscript-ead-display',
