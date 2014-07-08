@@ -136,9 +136,23 @@ function islandora_manuscript_theme() {
       'template' => 'theme/islandora-manuscript-manuscript',
     ),
     'islandora_manuscript_page' => array(
-      'arguments' => array('object' => NULL),
+      'variables' => array('object' => NULL),
       'file' => 'theme/theme.inc',
       'template' => 'theme/islandora-manuscript-page',
+    ),
+    'islandora_manuscript_ead_display' => array(
+      'variables' => array(
+        'object' => NULL,
+        'xslt_parameters' => array(),
+        'xslt_functions' => array(
+          'islandora_manuscript_build_parented_query_url',
+          'islandora_manuscript_build_flat_query_url',
+        ),
+        'doc' => NULL,
+        'xslt_doc' => NULL,
+      ),
+      'file' => 'theme/theme.inc',
+      'template' => 'theme/islandora-manuscript-ead-display',
     ),
   );
 }
@@ -387,6 +401,19 @@ function islandora_manuscript_islandora_manuscriptpagecmodel_islandora_derivativ
 function islandora_manuscript_islandora_manuscriptcmodel_islandora_view_object($object) {
   $output = theme('islandora_manuscript_manuscript', array('object' => $object));
   return array('islandora_manuscript' => $output);
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_view_object().
+ */
+function islandora_manuscript_islandora_manuscriptinventorycmodel_islandora_view_object($object) {
+  return array(
+    'islandora_manuscript_ead_display' => array(
+      '#type' => 'markup',
+      '#theme' => 'islandora_manuscript_ead_display',
+      '#object' => $object,
+    ),
+  );
 }
 
 /**
