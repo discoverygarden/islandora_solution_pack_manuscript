@@ -125,7 +125,7 @@ function template_process_islandora_manuscript_ead_display(&$variables) {
 function islandora_manuscript_build_parented_query_url(array $container_array, array $all) {
   $object = menu_get_object('islandora_object', 2);
   if ($object) {
-    $path = str_replace('%islandora_object', $object->id, 'islandora/object/%islandora_object/manuscript/manuscripts');
+    $path = "islandora/object/{$object->id}/manuscript/manuscripts";
     list($container) = $container_array;
     return url($path, array(
       'query' => array(
@@ -241,7 +241,7 @@ function islandora_manuscript_build_flat_query_url(array $containers) {
   $object = menu_get_object('islandora_object', 2);
   $parts = islandora_manuscript_build_flat_subfile_query($containers);
   if ($object && !empty($parts)) {
-    $path = str_replace('%islandora_object', $object->id, 'islandora/object/%islandora_object/manuscript/manuscripts');
+    $path = "islandora/object/{$object->id}/manuscript/manuscripts";
     return url($path, array(
       'query' => array(
         'f' => $parts,
