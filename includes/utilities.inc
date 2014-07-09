@@ -45,6 +45,12 @@ EOQ;
   if (isset($transform_pid)) {
     return islandora_object_load($transform_pid);
   }
+  else {
+    $transform_object = islandora_object_load(ISLANDORA_MANUSCRIPT_DEFAULT_TRANSFORM);
+    if ($transform_object) {
+      return $transform_object;
+    }
+  }
   return FALSE;
 }
 
