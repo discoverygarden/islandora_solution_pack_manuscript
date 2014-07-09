@@ -21,6 +21,11 @@ function islandora_manuscript_install() {
 function islandora_manuscript_uninstall() {
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   islandora_install_solution_pack('islandora_manuscript', 'uninstall');
-  $variables = array('islandora_manuscript_ingest_derivatives');
+  $variables = array(
+    'islandora_manuscript_parent_manuscript_solr_field',
+    'islandora_manuscript_ingest_derivatives',
+    'islandora_manuscript_box_identifier_solr_field',
+    'islandora_manuscript_folder_identifier_solr_field',
+  );
   array_walk($variables, 'variable_del');
 }
