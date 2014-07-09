@@ -2,13 +2,13 @@
 
 ## Introduction
 
-Allows users to create and view Manuscripts. Including the upload of TEI and XSLT and CSS documents. Users will be able to view transformed manuscript TEI (via the upload XSLT) side by side with the image(s) of the manuscript (via the Open Seadragon viewer). Users will also be able to browse Manuscripts via Box / Folder hierarchies as defined by their inventory record.
+Allows users to create and view Manuscripts. Including the upload of TEI and XSLT and CSS documents. Users will be able to view transformed manuscript TEI (via the upload XSLT) side by side with the image(s) of the manuscript (via the Open Seadragon viewer). Users will also be able to browse Manuscripts via Box / Folder hierarchies as defined by their record in an associated finding aid.
 
 ### Key Features
 
 * Ability to upload TEI
 * Ability to upload XSLT (1.0) / CSS
-* Ability to associate XSLT / CSS with a Inventory Object
+* Ability to associate XSLT / CSS with a Finding Aid Object
 * Rendering of TEI as HTML (XSLT)
 * Open Sea Dragon Viewer display of Manuscript image Content
 * Side by side view of Transformed TEI and Open Sea Dragon Viewer
