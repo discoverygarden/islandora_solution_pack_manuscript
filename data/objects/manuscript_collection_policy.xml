@@ -1,7 +1,7 @@
 <collection_policy name="" xmlns="http://www.islandora.ca" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.islandora.ca http://syn.lib.umanitoba.ca/collection_policy.xsd">
   <content_models>
     <content_model dsid="ISLANDORACM" name="Islandora Manuscript Content Model" namespace="islandora" pid="islandora:manuscriptCModel"/>
-    <content_model dsid="ISLANDORACM" name="Islandora Manuscript Inventory Content Model" namespace="islandora" pid="islandora:manuscriptInventoryCModel"/>
+    <content_model dsid="ISLANDORACM" name="Islandora Finding Aid Content Model" namespace="islandora" pid="islandora:findingAidCModel"/>
   </content_models>
   <search_terms/>
   <staging_area/>

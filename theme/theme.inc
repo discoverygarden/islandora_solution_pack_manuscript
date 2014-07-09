@@ -147,7 +147,7 @@ function islandora_manuscript_build_parented_query_url(array $container_array, a
  */
 function islandora_manuscript_build_partial_query(DOMElement $container) {
   $subqueries = array();
-  $field = islandora_manuscript_inventory_get_solr_field($container->getAttribute('type'));
+  $field = islandora_manuscript_findingaid_get_solr_field($container->getAttribute('type'));
 
   $value = explode('-', trim($container->nodeValue));
   $count = count($value);
@@ -213,7 +213,7 @@ function islandora_manuscript_build_subfile_query(DOMElement $container, array $
  *   A string containing the name of a Solr field with which a query might be
  *   built, or FALSE if we do not have a mapping.
  */
-function islandora_manuscript_inventory_get_solr_field($raw_type) {
+function islandora_manuscript_findingaid_get_solr_field($raw_type) {
   $type = strtolower($raw_type);
   if (strpos($type, 'box') === 0) {
     return variable_get('islandora_manuscript_box_identifier_solr_field', 'mods_relatedItem_host_identifier_box_ms');
