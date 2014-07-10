@@ -436,7 +436,7 @@ function islandora_manuscript_islandora_findingaidcmodel_islandora_view_object($
 /**
  * Implements hook_CMODEL_PID_islandora_view_object().
  */
-function islandora_manuscript_islandora_pagecmodel_islandora_view_object($object, $page_number, $page_size) {
+function islandora_manuscript_islandora_manuscriptpagecmodel_islandora_view_object($object, $page_number, $page_size) {
   $output = theme('islandora_manuscript_page', array('object' => $object));
   return array('islandora_manuscript' => $output);
 }
