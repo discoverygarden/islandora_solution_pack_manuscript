@@ -95,6 +95,15 @@ function islandora_manuscript_menu() {
       'file path' => drupal_get_path('module', 'islandora_paged_content'),
       'file' => 'includes/manage_pages.inc',
     ),
+    'islandora/object/%islandora_object/manage/manuscript/link-finding-aid' => array(
+      'title' => 'Link with Finding Aid',
+      'type' => MENU_LOCAL_ACTION,
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('islandora_manuscript_link_to_finding_aid_form', 2),
+      'access callback' => 'islandora_manuscript_link_to_finding_aid_access_callback',
+      'access arguments' => array(2),
+      'file' => 'includes/link.inc',
+    ),
     'islandora/object/%islandora_object/manage/manuscript_page' => array(
       'title' => 'Page',
       'type' => MENU_LOCAL_TASK,
@@ -106,6 +115,14 @@ function islandora_manuscript_menu() {
       'file' => 'includes/manage_page.inc',
     ),
   );
+}
+
+/**
+ * Access callback for finding aid link path.
+ */
+function islandora_manuscript_link_to_finding_aid_access_callback($object) {
+  module_load_include('inc', 'islandora_manuscript', 'includes/link');
+  return $object instanceof AbstractObject && !islandora_manuscript_has_finding_aid_link($object) && islandora_datastream_access(ISLANDORA_METADATA_EDIT, $object['RELS-EXT']);
 }
 
 /**
