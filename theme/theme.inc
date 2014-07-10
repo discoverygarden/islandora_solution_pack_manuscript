@@ -10,11 +10,13 @@
  */
 function islandora_manuscript_preprocess_islandora_manuscript_manuscript(array &$variables) {
   module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  module_load_include('inc', 'islandora_manuscript', 'includes/utilities');
   $object = $variables['object'];
   $params = array(
     'object' => $object,
     'pages' => islandora_paged_content_get_pages($object),
     'page_progression' => islandora_paged_content_get_page_progression($object),
+    'transform_object' => islandora_manuscript_get_manuscript_transform_object($object),
   );
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   $viewer = islandora_get_viewer($params, 'islandora_manuscript_viewers');

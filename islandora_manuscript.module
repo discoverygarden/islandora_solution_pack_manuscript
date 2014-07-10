@@ -7,6 +7,10 @@
 
 // Predicates.
 define('ISLANDORA_MANUSCRIPT_HAS_TRANSFORM_PREDICATE', 'hasTransform');
+define('ISLANDORA_MANUSCRIPT_HAS_EAD_PREDICATE', 'isMemberOf');
+
+// Islandora Objects.
+define('ISLANDORA_MANUSCRIPT_DEFAULT_TRANSFORM', 'islandora:defaultTransform');
 
 /**
  * Implements hook_menu().
@@ -258,6 +262,18 @@ function islandora_manuscript_islandora_required_objects(IslandoraTuque $connect
     ),
   ));
   $transform_collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
+  // Default transform.
+  $default_transform = $create_object($connection, array(
+    'pid' => ISLANDORA_MANUSCRIPT_DEFAULT_TRANSFORM,
+    'label' => 'Default Transform',
+    'model' => 'islandora:transformCModel',
+    'datastreams' => array(
+      'XSLT' => array(
+        'file' => "$module_path/data/objects/default_transform.xsl",
+        'mimetype' => 'application/xslt+xml',
+      ),
+    ),
+  ));
   return array(
     'islandora_manuscript' => array(
       'title' => 'Islandora Manuscript Solution Pack',
@@ -268,6 +284,7 @@ function islandora_manuscript_islandora_required_objects(IslandoraTuque $connect
         $transform_content_model,
         $manuscript_collection,
         $transform_collection,
+        $default_transform,
       ),
     ),
   );
@@ -432,5 +449,22 @@ function islandora_manuscript_form_islandora_delete_object_form_alter(array &$fo
   $object = $form_state['object'];
   if (in_array('islandora:transformCModel', $object->models)) {
     $form['#submit'] = array('islandora_manuscript_islandora_delete_object_form_submit');
+  }
+}
+
+/**
+ * Implements hook_file_mimetype_mapping_alter().
+ */
+function islandora_manuscript_file_mimetype_mapping_alter(&$mapping) {
+  $mime_detect = new MimeDetect();
+  $types = $mime_detect->getMimeTypes();
+  $intersect = array_intersect_key($types, $mapping['extensions']);
+  foreach ($intersect as $ext => $mime) {
+    $keys = array_keys($mapping['mimetypes'], $mime);
+    if (empty($keys)) {
+      $mapping['mimetypes'][] = $mime;
+      $keys = array_keys($mapping['mimetypes'], $mime);
+    }
+    $mapping['extensions'][$ext] = reset($keys);
   }
 }
