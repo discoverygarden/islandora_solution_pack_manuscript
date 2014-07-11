@@ -114,6 +114,16 @@ function islandora_manuscript_menu() {
       'file path' => drupal_get_path('module', 'islandora_paged_content'),
       'file' => 'includes/manage_page.inc',
     ),
+    //'islandora_manuscript/autocomplete/finding_aid/%menu_tail' => array(
+    'islandora_manuscript/autocomplete/finding_aid' => array(
+      'title' => 'Finding Aid Autocomplete Callback',
+      'page callback' => 'islandora_manuscript_autocomplete_finding_aid',
+      //'page arguments' => array(3),
+      'access arguments' => array(ISLANDORA_VIEW_OBJECTS),
+      //'load arguments' => array('%map', '%index'),
+      'file' => 'includes/link.inc',
+      'type' => MENU_CALLBACK,
+    ),
   );
 }
 
