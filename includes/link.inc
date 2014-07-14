@@ -86,13 +86,15 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
     '#type' => isset($object) ? 'item' : 'textfield',
     '#title' => t('Finding Aid'),
     '#description' => t('The finding aid object to which this manuscript is associated.'),
-    '#autocomplete_path' => 'islandora_manuscript/autocomplete/finding_aid',
     '#ajax' => array(
       'event' => 'change',
       'wrapper' => $wrapper_id,
       'callback' => 'islandora_manuscript_ajax_callback',
     ),
   );
+  if (module_exists('islandora_solr')) {
+    $form['finding_aid']['#autocomplete_path'] = 'islandora_manuscript/autocomplete/finding_aid';
+  }
 
   if (isset($object)) {
     $form['finding_aid']['#markup'] = $object->id;
@@ -578,23 +580,25 @@ function islandora_manuscript_finding_aid_process_info($info) {
  * Autocomplete callback.
  */
 function islandora_manuscript_autocomplete_finding_aid($search_string) {
-  module_load_include('inc', 'islandora_solr', 'includes/utilities');
-  $qp = new IslandoraSolrQueryProcessor();
-  $qp->buildQuery($search_string);
-  $qp->solrParams['fq'][] = format_string('!field:("info:fedora/!pid" OR "!pid")', array(
-    '!field' => islandora_solr_lesser_escape(variable_get('islandora_solr_content_model_field', 'RELS_EXT_hasModel_uri_ms')),
-    '!pid' => 'islandora:findingAidCModel',
-  ));
-  $label_field = variable_get('islandora_solr_object_label_field', 'fgs_label_s');
-  $qp->solrParams['fl'] = implode(',', array(
-    'PID',
-    $label_field,
-  ));
-  $qp->solrParams['defType'] = 'dismax';
-  $qp->executeQuery();
   $output = array();
-  foreach ($qp->islandoraSolrResult['response']['objects'] as $result) {
-    $output[$result['PID']] = $result['solr_doc'][$label_field];
+  if (module_exists('islandora_solr')) {
+    module_load_include('inc', 'islandora_solr', 'includes/utilities');
+    $qp = new IslandoraSolrQueryProcessor();
+    $qp->buildQuery($search_string);
+    $qp->solrParams['fq'][] = format_string('!field:("info:fedora/!pid" OR "!pid")', array(
+      '!field' => islandora_solr_lesser_escape(variable_get('islandora_solr_content_model_field', 'RELS_EXT_hasModel_uri_ms')),
+      '!pid' => 'islandora:findingAidCModel',
+    ));
+    $label_field = variable_get('islandora_solr_object_label_field', 'fgs_label_s');
+    $qp->solrParams['fl'] = implode(',', array(
+      'PID',
+      $label_field,
+    ));
+    $qp->solrParams['defType'] = 'dismax';
+    $qp->executeQuery();
+    foreach ($qp->islandoraSolrResult['response']['objects'] as $result) {
+      $output[$result['PID']] = $result['solr_doc'][$label_field];
+    }
   }
   drupal_json_output($output);
 }
