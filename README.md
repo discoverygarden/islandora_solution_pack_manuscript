@@ -20,6 +20,7 @@ This module requires the following modules/libraries:
 
 * [Islandora](https://github.com/islandora/islandora)
 * [Islandora Paged Content](https://github.com/Islandora/islandora_paged_content)
+* [jstree](https://github.com/vakata/jstree)
 
 This module has the following recommended (optional) modules/libraries:
 
@@ -31,6 +32,8 @@ This module has the following recommended (optional) modules/libraries:
 ## Installation
 
 Install as usual, see [this](https://drupal.org/documentation/install/modules-themes/modules-7) for further information.
+
+Download/clone the [jsTree](https://github.com/vakata/jstree) library to `sites/all/libraries/jstree`. The module has been tested with the 3.0.0 release of jsTree.
 
 ## Configuration
 
