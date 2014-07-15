@@ -237,10 +237,10 @@ function islandora_manuscript_link_to_finding_aid_form_submit(&$form, &$form_sta
   }
   else {
     $object = islandora_object_load($form_state['islandora_manuscript_id']);
-    if (isset($form_state['values']['finding_aid'])) {
-      $finding_aid_object = islandora_object_load($form_state['values']['finding_aid']);
-      $object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf', $finding_aid_object->id);
-    }
+  }
+  if (!isset($finding_aid_object) && isset($form_state['values']['finding_aid'])) {
+    $finding_aid_object = islandora_object_load($form_state['values']['finding_aid']);
+    $object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf', $finding_aid_object->id);
   }
 
   if (!isset($finding_aid_object)) {
