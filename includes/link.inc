@@ -277,7 +277,7 @@ function islandora_manuscript_link_to_finding_aid_form_undo_submit(&$form, &$for
  *
  * @param AbstractDatastream $mods
  *   A MODS datastream.
- * @param object $info
+ * @param array $info
  *   A associative array containing:
  *   - finding_aid: The ID of the finding aid with which to associate.
  *   - selected: A stdClass object containing the "selected node" info as
