@@ -277,7 +277,7 @@ function islandora_manuscript_link_to_finding_aid_form_undo_submit(&$form, &$for
  *
  * @param AbstractDatastream $mods
  *   A MODS datastream.
- * @param array $info
+ * @param object $info
  *   A associative array containing:
  *   - finding_aid: The ID of the finding aid with which to associate.
  *   - selected: A stdClass object containing the "selected node" info as
@@ -404,18 +404,20 @@ EOXML;
  *
  * @param AbstractObject $object
  *   A finding aid object containing an EAD datastream.
+ * @param bool $container_list
+ *   Whether to limit series and subseries only.
  *
  * @return array
  *   An indexed array, as could be passed to jstree core.data. We build out
  *   the hierarchical structure, as opposed to the flat structure with IDs.
  */
-function islandora_manuscript_finding_aid_get_component_tree_for_jstree(AbstractObject $object) {
+function islandora_manuscript_finding_aid_get_component_tree_for_jstree(AbstractObject $object, $container_list = FALSE) {
   $ead_doc = new DOMDocument();
   $ead_doc->loadXML($object['EAD']->content);
   $ead_xpath = new DOMXPath($ead_doc);
   $ead_xpath->registerNamespace('ead', 'urn:isbn:1-931666-22-9');
 
-  return islandora_manuscript_finding_aid_get_component_tree_level($ead_xpath->query('//ead:dsc/ead:c | //ead:dsc/ead:c01'), $ead_xpath);
+  return islandora_manuscript_finding_aid_get_component_tree_level($ead_xpath->query('//ead:dsc/ead:c | //ead:dsc/ead:c01'), $ead_xpath, $container_list);
 }
 
 /**
@@ -425,6 +427,8 @@ function islandora_manuscript_finding_aid_get_component_tree_for_jstree(Abstract
  *   A list of nodes to process.
  * @param DOMXPath $xpath
  *   A DOMXPath instance to reuse.
+ * @param bool $container_list
+ *   Whether to limit series and subseries only.
  *
  * @return array
  *   An indexed array of associative arrays, each representing a component
@@ -433,10 +437,16 @@ function islandora_manuscript_finding_aid_get_component_tree_for_jstree(Abstract
  *
  * @see islandora_manuscript_finding_aid_get_component_tree()
  */
-function islandora_manuscript_finding_aid_get_component_tree_level(DOMNodeList $list, DOMXPath $xpath) {
+function islandora_manuscript_finding_aid_get_component_tree_level(DOMNodeList $list, DOMXPath $xpath, $container_list = FALSE) {
   $roots = array();
   foreach ($list as $component) {
-    $roots[] = islandora_manuscript_finding_aid_get_component_tree($component, $xpath);
+    $type = FALSE;
+    if ($container_list) {
+      $type = $component->getAttribute('level');
+    }
+    if (!$container_list || $type == 'series' || $type == 'subseries') {
+      $roots[] = islandora_manuscript_finding_aid_get_component_tree($component, $xpath, $container_list);
+    }
   }
   return $roots;
 }
@@ -448,6 +458,8 @@ function islandora_manuscript_finding_aid_get_component_tree_level(DOMNodeList $
  *   An EAD component element.
  * @param DOMXPath $xpath
  *   An instance to reuse.
+ * @param bool $container_list
+ *   Whether to limit series and subseries only.
  *
  * @return array
  *   An associative array containing:
@@ -459,7 +471,7 @@ function islandora_manuscript_finding_aid_get_component_tree_level(DOMNodeList $
  *   - path: An xpath which could be used to get back to the given node...
  *     Never actually got used?
  */
-function islandora_manuscript_finding_aid_get_component_tree(DOMElement $element, DOMXPath $xpath) {
+function islandora_manuscript_finding_aid_get_component_tree(DOMElement $element, DOMXPath $xpath, $container_list = FALSE) {
   $title = $xpath->evaluate('normalize-space(string(ead:did/ead:unittitle/text()))', $element);
   $date = $xpath->evaluate('normalize-space(string(ead:did/ead:unitdate/text()))', $element);
   $text = empty($date) ?
@@ -468,16 +480,20 @@ function islandora_manuscript_finding_aid_get_component_tree(DOMElement $element
       '@title' => $title,
       '@date' => $date,
     ));
+  $id = $element->getAttribute('id');
   $info = array(
-    'id' => $element->getAttribute('id'),
+    'id' => $container_list ? "container_$id" : $id,
     'text' => $text,
     'type' => $element->getAttribute('level'),
     'children' => array_merge(
-      islandora_manuscript_finding_aid_get_component_tree_level($xpath->query('ead:c01 | ead:c02 | ead:c03 | ead:c04 | ead:c05 | ead:c', $element), $xpath),
+      islandora_manuscript_finding_aid_get_component_tree_level($xpath->query('ead:c01 | ead:c02 | ead:c03 | ead:c04 | ead:c05 | ead:c', $element), $xpath, $container_list),
       islandora_manuscript_finding_aid_get_containers($element, $xpath)
     ),
     'path' => $element->getNodePath(),
   );
+  if ($container_list) {
+    $info['a_attr'] = array('href' => "#$id");
+  }
   return $info;
 }
 

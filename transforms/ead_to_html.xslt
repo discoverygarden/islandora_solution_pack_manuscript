@@ -7,7 +7,6 @@
   xmlns:php="http://php.net/xsl"
   xsl:extension-element-prefixes="php"
 >
-  <xsl:param name="toc_string">Table of Contents</xsl:param>
   <xsl:param name="container_string">Containers</xsl:param>
   <xsl:param name="date_string">Date</xsl:param>
   <xsl:param name="top_string">Top</xsl:param>
@@ -18,18 +17,12 @@
 
   <xsl:template match="ead:dsc">
     <div class="ead">
-      <h1 id="ead-toc">
-        <xsl:value-of select="$toc_string"/>
-      </h1>
-      <ol class="toc">
-        <xsl:apply-templates mode="toc"/>
-      </ol>
       <xsl:apply-templates/>
     </div>
   </xsl:template>
 
   <xsl:template match="ead:dsc/ead:head">
-    <h1>
+    <h1 id="ead-top">
       <xsl:apply-templates/>
     </h1>
   </xsl:template>
@@ -64,36 +57,6 @@
     </xsl:choose>
   </xsl:template>
 
-  <!-- Table of contents stuff... -->
-  <xsl:template match="*" mode="toc"/>
-  <xsl:template match="ead:c | ead:c01 | ead:c02 | ead:c03" mode="toc">
-    <li>
-      <xsl:attribute name="class">
-        <xsl:text>ead-toc-component</xsl:text>
-        <xsl:text> </xsl:text>
-        <xsl:value-of select="concat('ead-toc-component-', local-name())"/>
-        <xsl:text> </xsl:text>
-        <xsl:value-of select="concat('ead-toc-component-type-', @level)"/>
-      </xsl:attribute>
-      <a>
-        <xsl:attribute name="href">
-          <xsl:text>#</xsl:text>
-          <xsl:call-template name="get_id"/>
-        </xsl:attribute>
-        <xsl:value-of select="ead:did/ead:unittitle"/>
-      </a>
-      <xsl:variable name="children">
-      <xsl:apply-templates mode="toc"/>
-      </xsl:variable>
-      <xsl:if test="normalize-space($children)">
-        <ol>
-          <xsl:copy-of select="$children"/>
-        </ol>
-      </xsl:if>
-    </li>
-  </xsl:template>
-  <!-- End table of contents stuff. -->
-
   <!-- General display -->
   <xsl:template match="ead:c | ead:c01 | ead:c02 | ead:c03">
     <div>
@@ -117,7 +80,7 @@
       </xsl:attribute>
       <xsl:apply-templates select="ead:unittitle"/>
     </h2>
-    <a href="#ead-toc">
+    <a href="#ead-top">
       <xsl:value-of select="$top_string"/>
     </a>
     <xsl:variable name="contents">
