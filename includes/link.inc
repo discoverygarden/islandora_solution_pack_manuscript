@@ -214,7 +214,12 @@ function islandora_manuscript_link_to_finding_aid_form_validate(&$form, &$form_s
   $form_state['islandora_manuscript_decoded_selected_node'] = $selected_node = json_decode($form_state['values']['selected_node']);
   if (isset($selected_node->type) && $selected_node->type != 'container') {
     form_set_error('', t('You must select a "container" entry.'));
-    $object = islandora_ingest_form_get_object($form_state);
+  }
+  if (isset($form_state['values']['finding_aid'])) {
+    $finding_aid = islandora_object_load($form_state['values']['finding_aid']);
+    if (!$finding_aid || !in_array('islandora:findingAidCModel', $finding_aid->models)) {
+      form_set_error('finding_aid', t('If a value is provided, it must identify a valid finding aid object.'));
+    }
   }
 }
 
