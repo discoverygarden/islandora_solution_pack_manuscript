@@ -547,9 +547,9 @@ function islandora_manuscript_block_view($delta = '') {
           module_load_include('inc', 'islandora_manuscript', 'includes/blocks');
           $block['subject'] = t('Container List');
           $block['content'] = islandora_manuscript_container_list($object);
-          break;
         }
       }
+      break;
   }
   return $block;
 }
