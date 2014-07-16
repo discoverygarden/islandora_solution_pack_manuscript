@@ -38,6 +38,29 @@ function islandora_manuscript_tei_upload_form(array $form, array &$form_state) {
 }
 
 /**
+ * Validation to see if an XML file is well-formed without schema checking.
+ *
+ * @param array $form
+ *   The Drupal form.
+ * @param array $form_state
+ *   The Drupal form state.
+ */
+function islandora_manuscript_tei_upload_form_validate(array $form, array &$form_state) {
+  if ($form_state['values']['file']) {
+    $file = file_load($form_state['values']['file']);
+    libxml_use_internal_errors(TRUE);
+    // Using drupal_realpath because loading URI's seems to screw up on files
+    // with spaces otherwise.
+    simplexml_load_file(drupal_realpath($file->uri));
+    $errors = count(libxml_get_errors());
+    libxml_use_internal_errors(FALSE);
+    if ($errors) {
+      form_error($form['file'], t('The uploaded file @file is not well-formed XML.', array('@file' => $file->filename)));
+    }
+  }
+}
+
+/**
  * Submit handler, adds uploaded file to ingest object.
  *
  * @param array $form
