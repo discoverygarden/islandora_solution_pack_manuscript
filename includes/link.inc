@@ -142,6 +142,8 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
   );
 
   if (isset($object) && $object) {
+    module_load_include('inc', 'islandora_manuscript', 'includes/jstreebuilder');
+    $builder = new \Islandora\Manuscript\JSTreeBuilder($object);
     $form['tree']['#attached']['js'][] = array(
       'type' => 'setting',
       'data' => array(
@@ -151,7 +153,7 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
               $id => array(
                 'core' => array(
                   'multiple' => FALSE,
-                  'data' => islandora_manuscript_finding_aid_get_component_tree_for_jstree($object),
+                  'data' => $builder->getTreeStructure(),
                 ),
                 'plugins' => array('types', 'conditionalselect'),
                 'types' => array(
@@ -397,199 +399,6 @@ function islandora_manuscript_link_create_mods(AbstractObject $object, array $in
 EOXML;
   islandora_manuscript_link_update_mods($datastream, $info);
   $object->ingestDatastream($datastream);
-}
-
-/**
- * Start building the required structure for jstree.
- *
- * @param AbstractObject $object
- *   A finding aid object containing an EAD datastream.
- * @param bool $container_list
- *   Whether to limit series and subseries only.
- *
- * @return array
- *   An indexed array, as could be passed to jstree core.data. We build out
- *   the hierarchical structure, as opposed to the flat structure with IDs.
- */
-function islandora_manuscript_finding_aid_get_component_tree_for_jstree(AbstractObject $object, $container_list = FALSE) {
-  $ead_doc = new DOMDocument();
-  $ead_doc->loadXML($object['EAD']->content);
-  $ead_xpath = new DOMXPath($ead_doc);
-  $ead_xpath->registerNamespace('ead', 'urn:isbn:1-931666-22-9');
-
-  return islandora_manuscript_finding_aid_get_component_tree_level($ead_xpath->query('//ead:dsc/ead:c | //ead:dsc/ead:c01'), $ead_xpath, $container_list);
-}
-
-/**
- * Build out the list of nodes at this level.
- *
- * @param DOMNodeList $list
- *   A list of nodes to process.
- * @param DOMXPath $xpath
- *   A DOMXPath instance to reuse.
- * @param bool $container_list
- *   Whether to limit series and subseries only.
- *
- * @return array
- *   An indexed array of associative arrays, each representing a component
- *   within the EAD, as returned by
- *   islandora_manuscript_finding_aid_get_component_tree().
- *
- * @see islandora_manuscript_finding_aid_get_component_tree()
- */
-function islandora_manuscript_finding_aid_get_component_tree_level(DOMNodeList $list, DOMXPath $xpath, $container_list = FALSE) {
-  $roots = array();
-  foreach ($list as $component) {
-    $type = FALSE;
-    if ($container_list) {
-      $type = $component->getAttribute('level');
-    }
-    if (!$container_list || $type == 'series' || $type == 'subseries') {
-      $roots[] = islandora_manuscript_finding_aid_get_component_tree($component, $xpath, $container_list);
-    }
-  }
-  return $roots;
-}
-
-/**
- * Build out a given component node for jstree.
- *
- * @param DOMElement $element
- *   An EAD component element.
- * @param DOMXPath $xpath
- *   An instance to reuse.
- * @param bool $container_list
- *   Whether to limit series and subseries only.
- *
- * @return array
- *   An associative array containing:
- *   - id: A string containing the ID of the component. May be empty if there
- *     is none.
- *   - text: The text to display for the given node.
- *   - children: An array of child nodes, as returned by
- *     islandora_manuscript_finding_aid_get_component_tree_level().
- *   - path: An xpath which could be used to get back to the given node...
- *     Never actually got used?
- */
-function islandora_manuscript_finding_aid_get_component_tree(DOMElement $element, DOMXPath $xpath, $container_list = FALSE) {
-  $title = $xpath->evaluate('normalize-space(string(ead:did/ead:unittitle/text()))', $element);
-  $date = $xpath->evaluate('normalize-space(string(ead:did/ead:unitdate/text()))', $element);
-  $text = empty($date) ?
-    $title :
-    format_string('@title (@date)', array(
-      '@title' => $title,
-      '@date' => $date,
-    ));
-  $id = $element->getAttribute('id');
-  $info = array(
-    'id' => $container_list ? "container_$id" : $id,
-    'text' => $text,
-    'type' => $element->getAttribute('level'),
-    'children' => array_merge(
-      islandora_manuscript_finding_aid_get_component_tree_level($xpath->query('ead:c01 | ead:c02 | ead:c03 | ead:c04 | ead:c05 | ead:c', $element), $xpath, $container_list),
-      islandora_manuscript_finding_aid_get_containers($element, $xpath)
-    ),
-    'path' => $element->getNodePath(),
-  );
-  if ($container_list) {
-    $info['a_attr'] = array('href' => "#$id");
-  }
-  return $info;
-}
-
-/**
- * Get all containers of this component.
- */
-function islandora_manuscript_finding_aid_get_containers(DOMElement $element, DOMXPath $xpath) {
-  $containers = islandora_manuscript_get_parented_containers($element, $xpath);
-  if (empty($containers)) {
-    $containers = islandora_manuscript_get_flat_containers($element, $xpath);
-  }
-  return $containers;
-}
-
-/**
- * Get containers which are related with parent => id references.
- */
-function islandora_manuscript_get_parented_containers(DOMElement $element, DOMXPath $xpath) {
-  $to_return = array();
-  foreach ($xpath->query('ead:did/ead:container[@parent and (starts-with(@type, "Folder") or starts-with(@type, "folder"))]', $element) as $container) {
-    $info = array(
-      'type' => 'container',
-    );
-    $parent_id = $container->getAttribute('parent');
-    $parent_containers = $xpath->query("//ead:container[@id='$parent_id']");
-    if ($parent_containers->length !== 1) {
-      // If there's more or less than one, something is going terribly wrong?
-      continue;
-    }
-    $parent_container = $parent_containers->item(0);
-    $info['container'] = array(
-      $parent_container,
-      $container,
-    );
-    $subs = array(
-      '@parent_type' => $parent_container->getAttribute('type'),
-      '@parent_text' => $parent_container->nodeValue,
-      '@current_type' => $container->getAttribute('type'),
-      '@current_text' => $container->nodeValue,
-    );
-    $info['text'] = array(
-      format_string('@parent_type @parent_text', $subs),
-      format_string('@current_type @current_text', $subs),
-    );
-    $to_return[] = islandora_manuscript_finding_aid_process_info($info);
-  }
-  return $to_return;
-};
-
-/**
- * Get containers which listed side by side.
- */
-function islandora_manuscript_get_flat_containers(DOMElement $element, DOMXPath $xpath) {
-  $containers = array();
-  $container_info = NULL;
-  foreach ($xpath->query('ead:did/ead:container', $element) as $container) {
-    $raw_type = $container->getAttribute('type');
-    $container_type = strtolower($raw_type);
-    // Some collections list multiple boxes side by side... We break them apart
-    // as separate containers.
-    if (strpos($container_type, 'box') === 0) {
-      if (isset($container_info)) {
-        $containers[] = islandora_manuscript_finding_aid_process_info($container_info);
-      }
-      $container_info = array(
-        'type' => 'container',
-        'text' => array(),
-      );
-    }
-    $container_info['text'][] = format_string('@type @text', array(
-      '@type' => $raw_type,
-      '@text' => $container->nodeValue,
-    ));
-    $container_info['container'][] = $container;
-  }
-  if (isset($container_info)) {
-    $containers[] = islandora_manuscript_finding_aid_process_info($container_info);
-  }
-  return $containers;
-}
-
-/**
- * Helper function; process containers and text into appropriate forms.
- */
-function islandora_manuscript_finding_aid_process_info($info) {
-  $containers = array();
-  foreach ($info['container'] as $container) {
-    $containers[$container->getAttribute('type')] = array(
-      'id' => $container->getAttribute('id'),
-      'value' => $container->nodeValue,
-      'path' => $container->getNodePath(),
-    );
-  }
-  $info['container'] = $containers;
-  $info['text'] = implode(', ', $info['text']);
-  return $info;
 }
 
 /**
