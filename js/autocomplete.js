@@ -16,6 +16,9 @@ Drupal.jsAC.prototype.select = function (node) {
 
 /**
  * Hides the autocomplete suggestions.
+ *
+ * Being overridden, as the original code would make a selection without
+ * actually using the "select" function.
  */
 Drupal.jsAC.prototype.hidePopup = function (keycode) {
   // Select item if the right key or mousebutton was pressed.
