@@ -72,6 +72,7 @@ function islandora_manuscript_ajax_callback(&$form, &$form_state) {
 function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, AbstractObject $operand = NULL) {
   form_load_include($form_state, 'inc', 'islandora_manuscript', 'includes/link');
   form_load_include($form_state, 'inc', 'islandora', 'includes/ingest.form');
+  $module_path = drupal_get_path('module', 'islandora_manuscript');
   $shared_storage = islandora_ingest_form_get_shared_storage($form_state);
   $step_storage =& islandora_ingest_form_get_step_storage($form_state, 'islandora_manuscript_link_to_finding_aid');
   if (isset($shared_storage['islandora_manuscript']['finding_aid'])) {
@@ -87,9 +88,15 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
     '#title' => t('Finding Aid'),
     '#description' => t('The finding aid object to which this manuscript is associated.'),
     '#ajax' => array(
-      'event' => 'change',
+      'event' => 'autocomplete.drupal',
       'wrapper' => $wrapper_id,
       'callback' => 'islandora_manuscript_ajax_callback',
+    ),
+    '#attached' => array(
+      'js' => array(
+        // Monkey-patch to deal with autocomplete/ajax interaction.
+        "$module_path/js/autocomplete.js",
+      ),
     ),
   );
   if (module_exists('islandora_solr')) {
@@ -107,7 +114,6 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
     }
   }
 
-  $module_path = drupal_get_path('module', 'islandora_manuscript');
   $library_path = libraries_get_path('jstree');
   $id = drupal_html_id('islandora_manuscript_linking_tree');
   $form['tree'] = array(
