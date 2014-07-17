@@ -151,19 +151,11 @@ function islandora_manuscript_build_partial_query(DOMElement $container) {
   $subqueries = array();
   $field = islandora_manuscript_findingaid_get_solr_field($container->getAttribute('type'));
 
-  $value = explode('-', trim($container->nodeValue));
-  $count = count($value);
-  if ($count >= 2) {
-    $subqueries[] = format_string('!field:["!start" TO "!end"]', array(
-      '!field' => $field,
-      '!start' => $value[0],
-      '!end' => $value[1],
-    ));
-  }
-  elseif ($count === 1) {
+  $value = trim($container->nodeValue);
+  if ($value != '') {
     $subqueries[] = format_string('!field:"!value"', array(
       '!field' => $field,
-      '!value' => $value[0],
+      '!value' => $value,
     ));
   }
 
@@ -193,6 +185,14 @@ function islandora_manuscript_build_subfile_query(DOMElement $container, array $
     }
   }
 
+  $component = $container->parentNode->parentNode;
+  if ($component->hasAttribute('id')) {
+    $subqueries[] = format_string('!field:"!value"', array(
+      '!field' => variable_get('islandora_manuscript_component_identifier_solr_field', 'dereffed_ead_component_id_ms'),
+      '!value' => $component->getAttribute('id'),
+    ));
+  }
+
   return $subqueries;
 }
 
@@ -218,10 +218,10 @@ function islandora_manuscript_build_subfile_query(DOMElement $container, array $
 function islandora_manuscript_findingaid_get_solr_field($raw_type) {
   $type = strtolower($raw_type);
   if (strpos($type, 'box') === 0) {
-    return variable_get('islandora_manuscript_box_identifier_solr_field', 'mods_relatedItem_host_identifier_box_ms');
+    return variable_get('islandora_manuscript_box_identifier_solr_field', 'mods_relatedItem_host_part_detail_box_number_ms');
   }
   elseif (strpos($type, 'folder') === 0) {
-    return variable_get('islandora_manuscript_folder_identifier_solr_field', 'mods_relatedItem_host_identifier_folder_ms');
+    return variable_get('islandora_manuscript_folder_identifier_solr_field', 'mods_relatedItem_host_part_detail_folder_number_ms');
   }
   else {
     watchdog('islandora_manuscript', 'Unrecognized type @type.', array('@type' => $raw_type));

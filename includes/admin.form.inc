@@ -54,14 +54,21 @@ function islandora_manuscript_admin_settings_form(array $form, array &$form_stat
     '#type' => 'textfield',
     '#title' => t('Manuscript Box Solr Field'),
     '#description' => t("Solr field containing the box identifier, on manuscript objects."),
-    '#default_value' => variable_get('islandora_manuscript_box_identifier_solr_field', 'mods_relatedItem_host_identifier_box_ms'),
+    '#default_value' => variable_get('islandora_manuscript_box_identifier_solr_field', 'mods_relatedItem_host_part_detail_box_number_ms'),
     '#size' => 30,
   );
   $form['islandora_manuscript_folder_identifier_solr_field'] = array(
     '#type' => 'textfield',
     '#title' => t('Manuscript Folder Solr Field'),
     '#description' => t("Solr field containing the folder identifier, on manuscript objects."),
-    '#default_value' => variable_get('islandora_manuscript_folder_identifier_solr_field', 'mods_relatedItem_host_identifier_folder_ms'),
+    '#default_value' => variable_get('islandora_manuscript_folder_identifier_solr_field', 'mods_relatedItem_host_part_detail_folder_number_ms'),
+    '#size' => 30,
+  );
+  $form['islandora_manuscript_component_identifier_solr_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Component ID Solr Field'),
+    '#description' => t("Solr field containing the identifier, on manuscript objects."),
+    '#default_value' => variable_get('islandora_manuscript_component_identifier_solr_field', 'dereffed_ead_component_id_ms'),
     '#size' => 30,
   );
 
