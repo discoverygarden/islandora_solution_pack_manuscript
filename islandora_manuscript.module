@@ -518,3 +518,38 @@ function islandora_manuscript_file_mimetype_mapping_alter(&$mapping) {
     $mapping['extensions'][$ext] = reset($keys);
   }
 }
+
+/**
+ * Implements hook_block_info().
+ */
+function islandora_manuscript_block_info() {
+  return array(
+    'container_list' => array(
+      'info' => t('Islandora Manuscript Container List'),
+      'cache' => DRUPAL_NO_CACHE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function islandora_manuscript_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'container_list':
+      if (strpos(current_path(), 'islandora/object') === 0) {
+        $object = menu_get_object('islandora_object', 2);
+        if ($object) {
+          if (!in_array('islandora:findingAidCModel', $object->models)) {
+            break;
+          }
+          module_load_include('inc', 'islandora_manuscript', 'includes/blocks');
+          $block['subject'] = t('Container List');
+          $block['content'] = islandora_manuscript_container_list($object);
+        }
+      }
+      break;
+  }
+  return $block;
+}

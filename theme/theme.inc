@@ -72,7 +72,6 @@ function islandora_manuscript_preprocess_islandora_manuscript_page(array &$varia
  */
 function template_preprocess_islandora_manuscript_ead_display(&$variables) {
   $variables['xslt_parameters'][''] = (isset($variables['xslt_parameters']['']) ? $variables['xslt_parameters'][''] : array()) + array(
-    "toc_string" => t('Table of Contents'),
     "container_string" => t('Containers'),
     "date_string" => t('Date'),
     "top_string" => t('Top'),
