@@ -88,6 +88,8 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
     '#title' => t('Finding Aid'),
     '#description' => t('The finding aid object to which this manuscript is associated.'),
     '#ajax' => array(
+      // XXX: The "autocomplete.drupal" event is actually triggered by our
+      // monkey-patched code.
       'event' => 'autocomplete.drupal',
       'wrapper' => $wrapper_id,
       'callback' => 'islandora_manuscript_ajax_callback',
