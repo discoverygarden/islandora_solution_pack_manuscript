@@ -80,6 +80,8 @@ function template_preprocess_islandora_manuscript_ead_display(&$variables) {
   $doc->loadXML($variables['object']['EAD']->content);
   $variables['xslt_doc'] = $xslt_doc = new DOMDocument();
   $xslt_doc->load(drupal_get_path('module', 'islandora_manuscript') . '/transforms/ead_to_html.xslt');
+  drupal_add_js('misc/form.js');
+  drupal_add_js('misc/collapse.js');
 }
 
 /**
