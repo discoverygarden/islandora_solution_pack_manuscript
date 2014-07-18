@@ -8,23 +8,20 @@
   xsl:extension-element-prefixes="php"
 >
   <xsl:param name="container_string">Containers</xsl:param>
-  <xsl:param name="date_string">Date</xsl:param>
-  <xsl:param name="top_string">Top</xsl:param>
 
   <xsl:template match="/">
-    <xsl:apply-templates select="//ead:dsc"/>
-  </xsl:template>
-
-  <xsl:template match="ead:dsc">
     <div class="ead">
-      <xsl:apply-templates/>
+      <xsl:apply-templates select="//ead:archdesc" mode="main_metadata"/>
+      <xsl:apply-templates select="//ead:dsc"/>
     </div>
   </xsl:template>
 
-  <xsl:template match="ead:dsc/ead:head">
-    <h1 id="ead-top">
+  <xsl:template match="*[not(ead:dsc)]" mode="main_metadata">
       <xsl:apply-templates/>
-    </h1>
+  </xsl:template>
+
+  <xsl:template match="ead:dsc">
+      <xsl:apply-templates/>
   </xsl:template>
 
   <xsl:template match="ead:scopecontent">
@@ -46,7 +43,6 @@
   -->
   <xsl:template name="get_id">
     <xsl:param name="element" select="current()"/>
-
     <xsl:choose>
       <xsl:when test="$element[@id]">
         <xsl:value-of select="$element/@id"/>
@@ -59,32 +55,32 @@
 
   <!-- General display -->
   <xsl:template match="ead:c | ead:c01 | ead:c02 | ead:c03">
-    <div>
+    <fieldset>
       <xsl:attribute name="class">
-        <xsl:text>ead-component</xsl:text>
-        <xsl:text> </xsl:text>
+        <xsl:text>ead-component collapsible collapsed </xsl:text>
         <xsl:value-of select="concat('ead-component-', local-name())"/>
         <xsl:text> </xsl:text>
         <xsl:value-of select="concat('ead-component-type-', @level)"/>
       </xsl:attribute>
-      <xsl:apply-templates/>
-    </div>
+      <legend>
+        <span class="fieldset-legend">
+          <xsl:apply-templates select="ead:did/ead:unittitle"/>
+          <xsl:text> </xsl:text>
+          <xsl:value-of select="ead:did/ead:unitdate"/>
+        </span>
+      </legend>
+      <div class="fieldset-wrapper">
+        <!-- This id should be on the fieldset semantically but is here to appease Drupal. -->
+        <xsl:attribute name="id">
+          <xsl:call-template name="get_id"/>
+        </xsl:attribute>
+        <xsl:apply-templates/>
+      </div>
+    </fieldset>
   </xsl:template>
 
   <xsl:template match="ead:did">
-    <h2>
-      <xsl:attribute name="id">
-        <xsl:call-template name="get_id">
-          <xsl:with-param name="element" select=".."/>
-        </xsl:call-template>
-      </xsl:attribute>
-      <xsl:apply-templates select="ead:unittitle"/>
-    </h2>
-    <a href="#ead-top">
-      <xsl:value-of select="$top_string"/>
-    </a>
     <xsl:variable name="contents">
-      <xsl:call-template name="date"/>
       <xsl:call-template name="container"/>
     </xsl:variable>
     <xsl:if test="normalize-space($contents)">
@@ -94,7 +90,7 @@
     </xsl:if>
   </xsl:template>
 
-  <!-- build definition list containing container searches and date -->
+  <!-- build definition list containing container searches. -->
   <xsl:template name="container">
     <xsl:variable name="contents">
       <xsl:choose>
@@ -162,22 +158,6 @@
     <xsl:apply-templates/>
   </xsl:template>
 
-  <xsl:template name="date">
-    <xsl:variable name="content">
-      <xsl:apply-templates select="ead:unitdate" mode="did_list"/>
-    </xsl:variable>
-    <xsl:if test="normalize-space($content)">
-      <dt>
-        <xsl:value-of select="$date_string"/>
-      </dt>
-      <xsl:copy-of select="$content"/>
-    </xsl:if>
-  </xsl:template>
-  <xsl:template match="ead:unitdate" mode="did_list">
-    <dd>
-      <xsl:apply-templates/>
-    </dd>
-  </xsl:template>
   <xsl:template match="text()" mode="did_list"/>
   <!-- end of did/definition list stuff -->
 
