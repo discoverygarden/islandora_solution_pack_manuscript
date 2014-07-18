@@ -73,13 +73,13 @@ function islandora_manuscript_preprocess_islandora_manuscript_page(array &$varia
 function template_preprocess_islandora_manuscript_ead_display(&$variables) {
   $variables['xslt_parameters'][''] = (isset($variables['xslt_parameters']['']) ? $variables['xslt_parameters'][''] : array()) + array(
     "container_string" => t('Containers'),
-    "date_string" => t('Date'),
-    "top_string" => t('Top'),
   );
   $variables['doc'] = $doc = new DOMDocument();
   $doc->loadXML($variables['object']['EAD']->content);
   $variables['xslt_doc'] = $xslt_doc = new DOMDocument();
   $xslt_doc->load(drupal_get_path('module', 'islandora_manuscript') . '/transforms/ead_to_html.xslt');
+
+  // Add JS for fieldsets.
   drupal_add_js('misc/form.js');
   drupal_add_js('misc/collapse.js');
 }
