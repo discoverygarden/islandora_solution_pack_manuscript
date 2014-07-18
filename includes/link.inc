@@ -102,7 +102,7 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
     ),
   );
   if (module_exists('islandora_solr')) {
-    $form['finding_aid']['#autocomplete_path'] = 'islandora_manuscript/autocomplete/finding_aid';
+    $form['finding_aid']['#autocomplete_path'] = 'islandora/manuscript/autocomplete/finding_aid';
   }
 
   if (isset($object)) {
