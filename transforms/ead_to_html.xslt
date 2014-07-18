@@ -10,13 +10,18 @@
   <xsl:param name="container_string">Containers</xsl:param>
 
   <xsl:template match="/">
-    <xsl:apply-templates select="//ead:dsc"/>
+    <div class="ead">
+      <xsl:apply-templates select="//ead:archdesc" mode="main_metadata"/>
+      <xsl:apply-templates select="//ead:dsc"/>
+    </div>
+  </xsl:template>
+
+  <xsl:template match="*[not(ead:dsc)]" mode="main_metadata">
+      <xsl:apply-templates/>
   </xsl:template>
 
   <xsl:template match="ead:dsc">
-    <div class="ead">
       <xsl:apply-templates/>
-    </div>
   </xsl:template>
 
   <xsl:template match="ead:scopecontent">
