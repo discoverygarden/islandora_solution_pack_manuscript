@@ -11,19 +11,10 @@
 
   <xsl:template match="/">
     <div class="ead">
-      <xsl:apply-templates select="//ead:archdesc" mode="main_metadata"/>
-      <xsl:apply-templates select="//ead:dsc"/>
+      <xsl:apply-templates select="//ead:archdesc"/>
     </div>
   </xsl:template>
-
-  <xsl:template match="*[not(ead:dsc)]" mode="main_metadata">
-      <xsl:apply-templates/>
-  </xsl:template>
-
-  <xsl:template match="ead:dsc">
-      <xsl:apply-templates/>
-  </xsl:template>
-
+  
   <xsl:template match="ead:scopecontent">
     <xsl:if test="ead:head">
       <h3>
