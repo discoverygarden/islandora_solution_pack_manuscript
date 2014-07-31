@@ -12,6 +12,6 @@
     <form MIME="text/xml"/>
   </dsTypeModel>
   <dsTypeModel ID="TEI" optional="true">
-    <form MIME="application/tei+xml"/>
+    <form MIME="text/xml"/>
   </dsTypeModel>
 </dsCompositeModel>
