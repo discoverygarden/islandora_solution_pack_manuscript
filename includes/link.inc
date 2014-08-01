@@ -191,10 +191,6 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
         $info['containers'][$type] = $values->value;
       }
       $found = islandora_manuscript_select_container($structure, $info);
-      dsm($step_storage, 'ss');
-      dsm($info, 'qwr');
-      dsm($found ? 'true' : 'false', 'ssdfwe');
-      dsm($structure, 'asdf');
     }
 
     $form['tree']['#attached']['js'][] = array(
