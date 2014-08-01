@@ -557,22 +557,6 @@ function islandora_manuscript_block_view($delta = '') {
 }
 
 /**
- * Implements hook_islandora_view_print_object().
- */
-function islandora_manuscript_islandora_view_print_object($object) {
-  if (in_array('islandora:manuscriptPageCModel', $object->models)) {
-    // Theme image separately.
-    $islandora_content = theme('image', array(
-      'title' => $object->label,
-      'path' => url("islandora/object/{$object->id}/datastream/JPG/view"),
-    ));
-    return theme('islandora_manuscript_page_img_print', array(
-      'islandora_content' => $islandora_content,
-    ));
-  }
-}
-
-/**
  * Implements hook_preprocess_islandora_object_print().
  */
 function islandora_manuscript_preprocess_islandora_object_print(array &$variables) {
