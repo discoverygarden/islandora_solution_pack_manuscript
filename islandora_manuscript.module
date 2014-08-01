@@ -555,3 +555,66 @@ function islandora_manuscript_block_view($delta = '') {
   }
   return $block;
 }
+
+/**
+ * Implements hook_islandora_view_print_object().
+ */
+function islandora_manuscript_islandora_view_print_object($object) {
+  if (in_array('islandora:manuscriptPageCModel', $object->models)) {
+    // Theme image separately.
+    $islandora_content = theme('image', array(
+      'title' => $object->label,
+      'path' => url("islandora/object/{$object->id}/datastream/JPG/view"),
+    ));
+    return theme('islandora_manuscript_page_img_print', array(
+      'islandora_content' => $islandora_content,
+    ));
+  }
+}
+
+/**
+ * Implements hook_process_theme().
+ */
+function islandora_manuscript_preprocess_islandora_object_print(array &$variables) {
+  $object = $variables['object'];
+  if (in_array('islandora:manuscriptPageCModel', $object->models)) {
+    $url = url("islandora/object/{$object->id}", array('absolute' => TRUE));
+    $variables['content']['link'] = array(
+      '#weight' => -10,
+      '#markup' => t('Persistent link: !link', array('!link' => l($url, $url))),
+    );
+  }
+}
+
+/**
+ * Implements hook_process_theme().
+ */
+function islandora_manuscript_process_islandora_object_print(array &$variables) {
+  $object = $variables['object'];
+  if (in_array('islandora:manuscriptPageCModel', $object->models)) {
+    $clip = isset($variables['clip']) ? $variables['clip'] : NULL;
+    $variables['content']['buttons'] = array(
+      '#access' => isset($clip),
+      '#prefix' => '<div>',
+      '#suffix' => '</div></br>',
+      '#weight' => -5,
+      'print' => array(
+        '#prefix' => '<strong>',
+        '#markup' => l(t('Print'), 'javascript:window.print();', array('external' => TRUE)),
+        '#suffix' => '</strong>',
+        '#weight' => -5,
+      ),
+      '0' => array(
+        '#markup' => ' | ',
+        '#weight' => -5,
+      ),
+      'download_clip' => array(
+        '#prefix' => '<strong>',
+        '#markup' => l(t('Download Image'), "islandora/object/{$object->id}/download_clip", array(
+          'query' => array('clip' => $clip))),
+        '#suffix' => '</strong>',
+        '#weight' => -5,
+      ),
+    );
+  }
+}
