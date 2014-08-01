@@ -82,6 +82,12 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
     $operand->id :
     NULL;
 
+  $form['description'] = array(
+    '#type' => 'item',
+    '#title' => t('Note'),
+    '#title_display' => 'invisible',
+    '#description' => t('You may link this manuscript with none or at most one Finding Aid. Note that if this manuscript is already linked to a Finding Aid, changes made here can remove that link.'),
+  );
   $wrapper_id = 'islandora-manuscript-ajax-wrapper';
   $form['finding_aid'] = array(
     '#type' => isset($object) ? 'item' : 'textfield',
@@ -113,6 +119,13 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
     $object = islandora_object_load($form_state['values']['finding_aid']);
     if (!$object) {
       form_set_error('finding_aid', 'Could not load object.');
+    }
+  }
+  elseif ($operand !== NULL) {
+    $found = islandora_manuscript_has_finding_aid_link($operand);
+    if ($found) {
+      $object = $found;
+      $form['finding_aid']['#default_value'] = $object->id;
     }
   }
 
@@ -152,6 +165,17 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
   if (isset($object) && $object) {
     module_load_include('inc', 'islandora_manuscript', 'includes/jstreebuilder');
     $builder = new \Islandora\Manuscript\JSTreeBuilder($object);
+    $structure = $builder->getTreeStructure();
+
+    // Get box/folder stuff from $operands MODS (if it exists), and make
+    // the appropriate node get selected in $structure.
+    if ($operand !== NULL) {
+      $info = islandora_manuscript_get_link_info($operand['MODS']);
+      if ($info) {
+        $found = islandora_manuscript_select_container($structure, $info);
+      }
+    }
+
     $form['tree']['#attached']['js'][] = array(
       'type' => 'setting',
       'data' => array(
@@ -161,7 +185,7 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
               $id => array(
                 'core' => array(
                   'multiple' => FALSE,
-                  'data' => $builder->getTreeStructure(),
+                  'data' => $structure,
                 ),
                 'plugins' => array('types', 'conditionalselect'),
                 'types' => array(
@@ -204,12 +228,43 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
   $form['selected_node'] = array(
     '#type' => 'hidden',
   );
+  $form_state['islandora_manuscript_selected_node_default_value'] = new stdClass();
+  if ($operand !== NULL && isset($info) && $info) {
+    $default = $form_state['islandora_manuscript_selected_node_default_value'];
+    $default->type = 'container';
+    $default->parent = substr($info['id'], 1);
+    $default->original = new stdClass();
+    $default->original->container = array();
+    foreach ($info['containers'] as $type => $value) {
+      $obj = $default->original->container[$type] = new stdClass();
+      $obj->value = $value;
+    }
+  }
   if (!isset($shared_storage['models'])) {
     $form['actions-thing'] = array(
       '#type' => 'actions',
+      'unlink' => array(
+        '#type' => 'submit',
+        '#value' => t('Unlink'),
+        '#validate' => array(
+          'islandora_manuscript_will_unlink_orphan_object',
+        ),
+        '#submit' => array(
+          'islandora_manuscript_unlink_from_finding_aids',
+        ),
+      ),
       'submit' => array(
         '#type' => 'submit',
         '#value' => t('Link Manuscript'),
+      ),
+      'cancel' => array(
+        '#theme' => 'link',
+        '#text' => t('Cancel'),
+        '#path' => "islandora/object/{$operand->id}/manage/manuscript",
+        '#options' => array(
+          'attributes' => array(),
+          'html' => FALSE,
+        ),
       ),
     );
   }
@@ -218,10 +273,140 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
 }
 
 /**
+ * Form validation callback for "unlink" action.
+ *
+ * Test if "unlinking" a manuscript from its finding aid will result in it being
+ * orphaned...  If it /will/ be orphaned, prevent the unlinking and reccomend
+ * that the object gets associated with a collection.
+ */
+function islandora_manuscript_will_unlink_orphan_object(&$form, &$form_state) {
+  $operand = islandora_object_load($form_state['build_info']['args'][0]);
+  $finding_aid = islandora_manuscript_has_finding_aid_link($operand);
+  module_load_include('inc', 'islandora_basic_collection', 'includes/utilities');
+  if ($finding_aid && !islandora_basic_collection_get_other_parents($operand, $finding_aid)) {
+    form_set_error('', format_xss(t('Unlinking this manuscript would cause it to be orphaned. !share or !migrate this object to a collection to avoid orphaning if you wish to unlink it from the finding aid.', array(
+      '!share' => l(t('Share'), "islandora/object/{$operand->id}/manage/object/share"),
+      '!migrate' => l(t('migrate'), "islandora/object/{$operand->id}/manage/object/migrate"),
+    ))));
+  }
+}
+
+/**
+ * Form submission callback for "unlink" action.
+ *
+ * Remove link to the finding aid.
+ */
+function islandora_manuscript_unlink_from_finding_aids(&$form, &$form_state) {
+  $operand = islandora_object_load($form_state['build_info']['args'][0]);
+  islandora_manuscript_clear_all_finding_aid_links($operand);
+  islandora_manuscript_link_cleanup_mods($operand['MODS']);
+  drupal_set_message(t('Unlinked @pid from any finding aids.', array(
+    '@pid' => $operand->id,
+  )));
+  $form_state['redirect'] = "islandora/object/{$operand->id}";
+}
+
+/**
+ * Search tree structure for node matching $info, and mark it as selected.
+ *
+ * @param array $structure
+ *   Reference to a numerically indexed array of associative arrays, as
+ *   provided by \Islandora\Manuscript\JSTreeBuilder::getLevel().
+ * @param array $info
+ *   An array as provided by islandora_manuscript_get_link_info().
+ *
+ * @return bool
+ *   TRUE if we managed to find the node to select (and selected it); otherwise,
+ *   FALSE.
+ */
+function islandora_manuscript_select_container(array &$structure, array $info) {
+  foreach ($structure as &$node) {
+    if ($node['type'] == 'container') {
+      // Test if it's the proper one.
+      if (array_intersect_key($node['container'], $info['containers']) == $node['container']) {
+        $found = TRUE;
+        foreach ($node['container'] as $type => $values) {
+          if ($info['containers'][$type] != $values['value']) {
+            // Found something which /doesn't/ match...
+            $found = FALSE;
+            break;
+          }
+        }
+        if ($found) {
+          $node['state'] = array(
+            'selected' => TRUE,
+          );
+          break;
+        }
+        else {
+          continue;
+        }
+      }
+    }
+    elseif (count($node['children']) > 0) {
+      $found = islandora_manuscript_select_container($node['children'], $info);
+      if ($found) {
+        return $found;
+      }
+      else {
+        continue;
+      }
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Get link info out of MODS.
+ *
+ * @param AbstractDatastream $ds
+ *   A MODS datastream from which to grab our link info.
+ *
+ * @return array
+ *   An associative array containing:
+ *   - id: A string indicating the component in which the container is found.
+ *     May be indicate the PID of the finding aid object if we failed to find
+ *     a fragment ID in the relevant attribute.
+ *   - containers: An associative array mapping the container type
+ *     (box/folder/etc) to a locator value inside the container.
+ */
+function islandora_manuscript_get_link_info(AbstractDatastream $ds) {
+  if ($ds->id != 'MODS') {
+    // Not MODS, what're you doing!?
+    return FALSE;
+  }
+
+  $doc = new DOMDocument();
+  $doc->loadXML($ds->content);
+  $xpath = new DOMXPath($doc);
+  $xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
+  $xpath->registerNamespace('xlink', 'http://www.w3.org/1999/xlink');
+  $finding_aid_refs = $xpath->query('/mods:mods/mods:relatedItem[@type="host" and @xlink:role="islandora-manuscript-finding-aid"]');
+  if ($finding_aid_refs->length !== 1) {
+    // No/too many entries?
+    return FALSE;
+  }
+
+  $info = array(
+    'containers' => array(),
+  );
+  $ref = $finding_aid_refs->item(0);
+  $href = $ref->getAttributeNS('http://www.w3.org/1999/xlink', 'href');
+  $info['id'] = substr($href, strrpos($href, '#'));
+  foreach ($xpath->query('mods:part/mods:detail[@type and mods:number]', $ref) as $detail) {
+    $info['containers'][$detail->getAttribute('type')] = $xpath->evaluate('normalize-space(mods:number)', $detail);
+  }
+  return $info;
+}
+
+/**
  * Form validation; ensure that only "containers" can be selected.
  */
 function islandora_manuscript_link_to_finding_aid_form_validate(&$form, &$form_state) {
-  $form_state['islandora_manuscript_decoded_selected_node'] = $selected_node = json_decode($form_state['values']['selected_node']);
+  $form_state['islandora_manuscript_decoded_selected_node'] = $selected_node = ((isset($form_state['values']['selected_node']) && !empty($form_state['values']['selected_node'])) ?
+    json_decode($form_state['values']['selected_node']) :
+    $form_state['islandora_manuscript_selected_node_default_value']);
+
   if (isset($selected_node->type) && $selected_node->type != 'container') {
     form_set_error('', t('You must select a "container" entry.'));
   }
@@ -255,6 +440,7 @@ function islandora_manuscript_link_to_finding_aid_form_submit(&$form, &$form_sta
   }
   if (!isset($finding_aid_object) && isset($form_state['values']['finding_aid']) && trim($form_state['values']['finding_aid']) != '') {
     $finding_aid_object = islandora_object_load($form_state['values']['finding_aid']);
+    islandora_manuscript_clear_all_finding_aid_links($object);
     $object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf', $finding_aid_object->id);
   }
 
@@ -278,12 +464,25 @@ function islandora_manuscript_link_to_finding_aid_form_submit(&$form, &$form_sta
 }
 
 /**
- * Undo submission; ger rid of our xlink fun.
+ * Undo submission; get rid of our xlink fun.
  */
 function islandora_manuscript_link_to_finding_aid_form_undo_submit(&$form, &$form_state) {
   $object = islandora_ingest_form_get_object($form_state);
+  $shared_storage = islandora_ingest_form_get_shared_storage($form_state);
+  if (!isset($shared_storage['islandora_manuscript']['finding_aid'])) {
+    islandora_manuscript_clear_all_finding_aid_links($object);
+  }
   if (isset($object['MODS'])) {
     islandora_manuscript_link_cleanup_mods($object['MODS']);
+  }
+}
+
+/**
+ * Nuke links to finding aids.
+ */
+function islandora_manuscript_clear_all_finding_aid_links(AbstractObject $object) {
+  while ($finding_aid_object = islandora_manuscript_has_finding_aid_link($object)) {
+    $object->relationships->remove(FEDORA_RELS_EXT_URI, 'isMemberOf', $finding_aid_object->id);
   }
 }
 
