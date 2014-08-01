@@ -573,7 +573,7 @@ function islandora_manuscript_islandora_view_print_object($object) {
 }
 
 /**
- * Implements hook_process_theme().
+ * Implements hook_preprocess_islandora_object_print().
  */
 function islandora_manuscript_preprocess_islandora_object_print(array &$variables) {
   $object = $variables['object'];
@@ -587,7 +587,7 @@ function islandora_manuscript_preprocess_islandora_object_print(array &$variable
 }
 
 /**
- * Implements hook_process_theme().
+ * Implements hook_process_islandora_object_print().
  */
 function islandora_manuscript_process_islandora_object_print(array &$variables) {
   $object = $variables['object'];
