@@ -301,7 +301,7 @@ function islandora_manuscript_will_unlink_orphan_object(&$form, &$form_state) {
   $finding_aid = islandora_manuscript_has_finding_aid_link($operand);
   module_load_include('inc', 'islandora_basic_collection', 'includes/utilities');
   if ($finding_aid && !islandora_basic_collection_get_other_parents($operand, $finding_aid)) {
-    form_set_error('', format_xss(t('Unlinking this manuscript would cause it to be orphaned. !share or !migrate this object to a collection to avoid orphaning if you wish to unlink it from the finding aid.', array(
+    form_set_error('', filter_xss(t('Unlinking this manuscript would cause it to be orphaned. !share or !migrate this object to a collection to avoid orphaning if you wish to unlink it from the finding aid.', array(
       '!share' => l(t('Share'), "islandora/object/{$operand->id}/manage/object/share"),
       '!migrate' => l(t('migrate'), "islandora/object/{$operand->id}/manage/object/migrate"),
     ))));
