@@ -4,6 +4,7 @@ package = Islandora Solution Packs
 dependencies[] = islandora
 dependencies[] = file
 dependencies[] = islandora_paged_content
+dependencies[] = islandora_basic_collection
 configure = admin/islandora/solution_pack_config/manuscript
 version = 7.x-dev
 core = 7.x

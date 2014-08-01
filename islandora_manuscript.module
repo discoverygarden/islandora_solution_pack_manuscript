@@ -144,7 +144,7 @@ function islandora_manuscript_menu() {
  */
 function islandora_manuscript_link_to_finding_aid_access_callback($object) {
   module_load_include('inc', 'islandora_manuscript', 'includes/link');
-  return $object instanceof AbstractObject && !islandora_manuscript_has_finding_aid_link($object) && islandora_datastream_access(ISLANDORA_METADATA_EDIT, $object['RELS-EXT']);
+  return $object instanceof AbstractObject && islandora_datastream_access(ISLANDORA_METADATA_EDIT, $object['RELS-EXT']);
 }
 
 /**
