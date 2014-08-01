@@ -121,6 +121,13 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
       form_set_error('finding_aid', 'Could not load object.');
     }
   }
+  elseif (isset($step_storage['finding_aid'])) {
+    $form['finding_aid']['#default_value'] = $step_storage['finding_aid'];
+    $object = islandora_object_load($step_storage['finding_aid']);
+    if (!$object) {
+      form_set_error('finding_aid', 'Could not load object.');
+    }
+  }
   elseif ($operand !== NULL) {
     $found = islandora_manuscript_has_finding_aid_link($operand);
     if ($found) {
@@ -174,6 +181,20 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
       if ($info) {
         $found = islandora_manuscript_select_container($structure, $info);
       }
+    }
+    elseif (isset($step_storage['selected'])) {
+      $info = array(
+        'id' => '#' . $step_storage['selected']->parent,
+        'containers' => array(),
+      );
+      foreach ($step_storage['selected']->original->container as $type => $values) {
+        $info['containers'][$type] = $values->value;
+      }
+      $found = islandora_manuscript_select_container($structure, $info);
+      dsm($step_storage, 'ss');
+      dsm($info, 'qwr');
+      dsm($found ? 'true' : 'false', 'ssdfwe');
+      dsm($structure, 'asdf');
     }
 
     $form['tree']['#attached']['js'][] = array(
@@ -229,7 +250,7 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
     '#type' => 'hidden',
   );
   $form_state['islandora_manuscript_selected_node_default_value'] = new stdClass();
-  if ($operand !== NULL && isset($info) && $info) {
+  if (isset($found) && $found && isset($info) && $info) {
     $default = $form_state['islandora_manuscript_selected_node_default_value'];
     $default->type = 'container';
     $default->parent = substr($info['id'], 1);
@@ -336,7 +357,7 @@ function islandora_manuscript_select_container(array &$structure, array $info) {
           $node['state'] = array(
             'selected' => TRUE,
           );
-          break;
+          return TRUE;
         }
         else {
           continue;
@@ -423,6 +444,7 @@ function islandora_manuscript_link_to_finding_aid_form_validate(&$form, &$form_s
  */
 function islandora_manuscript_link_to_finding_aid_form_submit(&$form, &$form_state) {
   $shared_storage = islandora_ingest_form_get_shared_storage($form_state);
+  $step_storage =& islandora_ingest_form_get_step_storage($form_state, 'islandora_manuscript_link_to_finding_aid');
 
   if (isset($shared_storage['models'])) {
     $object = islandora_ingest_form_get_object($form_state);
@@ -434,14 +456,25 @@ function islandora_manuscript_link_to_finding_aid_form_submit(&$form, &$form_sta
         $object->id = $object->repository->getNextIdentifier(islandora_get_namespace($finding_aid_object->id));
       }
     }
+    $step_storage['finding_aid'] = drupal_array_get_nested_value($form_state['values'], array('finding_aid'));
+    $step_storage['selected'] = $form_state['islandora_manuscript_decoded_selected_node'];
   }
   else {
     $object = islandora_object_load($form_state['islandora_manuscript_id']);
   }
-  if (!isset($finding_aid_object) && isset($form_state['values']['finding_aid']) && trim($form_state['values']['finding_aid']) != '') {
-    $finding_aid_object = islandora_object_load($form_state['values']['finding_aid']);
+  if (!isset($finding_aid_object)) {
     islandora_manuscript_clear_all_finding_aid_links($object);
-    $object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf', $finding_aid_object->id);
+
+    if (isset($form_state['values']['finding_aid']) && trim($form_state['values']['finding_aid']) != '') {
+      $finding_aid_object = islandora_object_load($form_state['values']['finding_aid']);
+    }
+    elseif (isset($step_storage['finding_aid']) && trim($step_storage['finding_aid']) != '') {
+      $finding_aid_object = islandora_object_load($step_storage['finding_aid']);
+    }
+
+    if ($finding_aid_object) {
+      $object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf', $finding_aid_object->id);
+    }
   }
 
   if (!isset($finding_aid_object)) {
@@ -522,7 +555,7 @@ function islandora_manuscript_link_update_mods(AbstractDatastream $mods, $info) 
   $related_item = $doc->createElementNS('http://www.loc.gov/mods/v3', 'relatedItem');
   $related_item->setAttribute('type', 'host');
   $related_item->setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:role', 'islandora-manuscript-finding-aid');
-  $related_item->setAttributeNS('http://www.w3.org/1999/xlink', 'href', "info:fedora/{$info['finding_aid']}/EAD" . (isset($info['selected']) ? "#{$info['selected']->parent}" : ''));
+  $related_item->setAttributeNS('http://www.w3.org/1999/xlink', 'href', "info:fedora/{$info['finding_aid']}/EAD" . (isset($info['selected']->parent) ? "#{$info['selected']->parent}" : ''));
   $part = $doc->createElementNS('http://www.loc.gov/mods/v3', 'part');
   if (isset($info['selected'])) {
     foreach ($info['selected']->original->container as $type => $container) {
