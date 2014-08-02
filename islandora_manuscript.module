@@ -121,7 +121,7 @@ function islandora_manuscript_menu() {
     'islandora/manuscript/autocomplete/finding_aid/%menu_tail' => array(
       'title' => 'Finding Aid Autocomplete Callback',
       'page callback' => 'islandora_manuscript_autocomplete_finding_aid',
-      'page arguments' => array(3),
+      'page arguments' => array(4),
       'access arguments' => array(ISLANDORA_VIEW_OBJECTS),
       'load arguments' => array('%map', '%index'),
       'file' => 'includes/link.inc',
