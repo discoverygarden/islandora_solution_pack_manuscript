@@ -459,6 +459,9 @@ function islandora_manuscript_link_to_finding_aid_form_submit(&$form, &$form_sta
     $object = islandora_object_load($form_state['islandora_manuscript_id']);
   }
   if (!isset($finding_aid_object)) {
+    if (isset($object['MODS'])) {
+      islandora_manuscript_link_cleanup_mods($object['MODS']);
+    }
     islandora_manuscript_clear_all_finding_aid_links($object);
 
     if (isset($form_state['values']['finding_aid']) && trim($form_state['values']['finding_aid']) != '') {
@@ -468,7 +471,7 @@ function islandora_manuscript_link_to_finding_aid_form_submit(&$form, &$form_sta
       $finding_aid_object = islandora_object_load($step_storage['finding_aid']);
     }
 
-    if ($finding_aid_object) {
+    if (isset($finding_aid_object)) {
       $object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf', $finding_aid_object->id);
     }
   }
