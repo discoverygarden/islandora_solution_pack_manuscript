@@ -221,7 +221,7 @@ class ContainerListJSTreeBuilder extends JSTreeBuilder {
     $type = $element->getAttribute('level');
     if (in_array($type, array('series', 'subseries'))) {
       $to_return = parent::getComponentTree($element);
-      $to_return['a_attr']['href'] = "#{$to_return['id']}";
+      $to_return['a_attr']['href'] = url("islandora/object/{$this->object->id}", array('fragment' => $to_return['id']));
       $to_return['id'] = "container_list_{$to_return['id']}";
       return $to_return;
     }

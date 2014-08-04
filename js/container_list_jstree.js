@@ -12,7 +12,8 @@
                         $(this)
                             .jstree(settings.islandora_manuscript.jstree.info[id])
                             .bind('select_node.jstree', function (e, data) {
-                              window.location.href = data.event.currentTarget.href;
+                                // Create a link on each node.
+                                window.location.href = data.event.currentTarget.href;
                             });
                     });
                 }
