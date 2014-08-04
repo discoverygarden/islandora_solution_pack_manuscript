@@ -468,7 +468,7 @@ function islandora_manuscript_link_to_finding_aid_form_submit(&$form, &$form_sta
       $finding_aid_object = islandora_object_load($step_storage['finding_aid']);
     }
 
-    if ($finding_aid_object) {
+    if (isset($finding_aid_object)) {
       $object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf', $finding_aid_object->id);
     }
   }
