@@ -556,7 +556,7 @@ function islandora_manuscript_link_update_mods(AbstractDatastream $mods, $info) 
   $related_item->setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:role', 'islandora-manuscript-finding-aid');
   $related_item->setAttributeNS('http://www.w3.org/1999/xlink', 'href', "info:fedora/{$info['finding_aid']}/EAD" . (isset($info['selected']->parent) ? "#{$info['selected']->parent}" : ''));
   $part = $doc->createElementNS('http://www.loc.gov/mods/v3', 'part');
-  if (isset($info['selected'])) {
+  if (isset($info['selected']->original)) {
     foreach ($info['selected']->original->container as $type => $container) {
       $detail = $doc->createElementNS('http://www.loc.gov/mods/v3', 'detail');
       $detail->setAttribute('type', $type);
