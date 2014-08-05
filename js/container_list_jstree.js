@@ -14,6 +14,7 @@
                             .bind('select_node.jstree', function (e, data) {
                                 // Create a link on each node.
                                 window.location.href = data.event.currentTarget.href;
+                                $(window.location.hash).parents("fieldset").children("legend").find("a").children("span").click();
                             });
                     });
                 }
