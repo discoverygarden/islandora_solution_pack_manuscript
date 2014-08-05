@@ -14,7 +14,7 @@
       <xsl:apply-templates select="//ead:archdesc"/>
     </div>
   </xsl:template>
-  
+
   <xsl:template match="ead:scopecontent">
     <xsl:if test="ead:head">
       <h3>
@@ -72,12 +72,24 @@
 
   <xsl:template match="ead:did">
     <xsl:variable name="contents">
+      <xsl:call-template name="archdesc_did"/>
       <xsl:call-template name="container"/>
     </xsl:variable>
     <xsl:if test="normalize-space($contents)">
       <dl>
         <xsl:copy-of select="$contents"/>
       </dl>
+    </xsl:if>
+  </xsl:template>
+
+  <!-- Handle top level did. -->
+  <xsl:template name="archdesc_did">
+    <xsl:if test="not(ead:container[@parent])">
+      <xsl:for-each select="*">
+        <p>
+          <xsl:apply-templates select="."/>
+        </p>
+      </xsl:for-each>
     </xsl:if>
   </xsl:template>
 
