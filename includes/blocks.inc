@@ -24,6 +24,7 @@ function islandora_manuscript_container_list($object) {
     '#attached' => array(
       'css' => array(
         "$library_path/dist/themes/default/style.min.css",
+        "$module_path/css/container_list_jstree.css",
       ),
       'js' => array(
         "$library_path/dist/libs/jquery.js" => array(
