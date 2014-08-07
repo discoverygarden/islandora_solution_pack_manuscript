@@ -51,23 +51,39 @@ Having problems or solved a problem? Check out the Islandora google groups for a
 ### Q. What elements are necessary in finding aid EAD metadata?
 
 A. Components (`c`, `c01`, `c02`, `c03`, _etc_) *MUST* have `id` attributes unique to the given XML document in order to reliably produce links and relationships. Components *MUST* have a `level` as one of:
-* series
-* subseries
-* file
-Additionally, as of writing, the only supported types of containers inside of components are boxes and folders. `Folder` entries *MAY* be associatited to `Boxes` using the `parent` attribute, to target the `id` given to a `box`. Alternatively, associations will be made by iterating containers and producing a new association for each "box" encountered.
+* `series`
+* `subseries`
+* `file`
+
+Additionally, as of writing, the only supported types of containers inside of components are boxes and folders. Folder entries *MAY* be associatited to boxes using the `parent` attribute, to target the `id` given to a box. Alternatively, associations will be made by iterating containers and producing a new association for each "box" encountered.
 
 A minimal example of the structure we require:
 ```xml
 <ead xmlns="urn:isbn:1-931666-22-9">
-  <archdesc>
+  <eadheader>
+    <eadid>example-id</eadid>
+    <filedesc>
+      <titlestmt>
+        <titleproper>Example Collection</titleproper>
+      </titlestmt>
+    </filedesc>
+  </eadheader>
+  <archdesc level="collection">
+    <did>
+      <unittitle>Example Collection</unittitle>
+    </did>
     <dsc>
       <c01 id="alpha" level="series">
         <!--
           "bravo" makes use of the "parent" attribute to associate a folder
           with a box.
         -->
+        <did>
+          <unittitle>Alpha</unittitle>
+        </did>
         <c02 id="bravo" level="file">
           <did>
+            <unittitle>Bravo</unittitle>
             <container id="container-one" type="box">1</container>
             <container parent="container-one" type="folder">1</container>
           </did>
@@ -77,11 +93,14 @@ A minimal example of the structure we require:
           occur in document order.
         -->
         <c02 id="charlie" level="file">
-          <container type="boxes">2-3</container>
-          <container type="box">4</container>
-          <container type="folder">1</container>
-          <container type="box">5</container>
-          <container type="folders">1-7</container>
+          <did>
+            <unittitle>Charlie</unittitle>
+            <container type="boxes">2-3</container>
+            <container type="box">4</container>
+            <container type="folder">1</container>
+            <container type="box">5</container>
+            <container type="folders">1-7</container>
+          </did>
         </c02>
       </c01>
     </dsc>
