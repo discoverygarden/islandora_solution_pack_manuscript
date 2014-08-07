@@ -46,6 +46,59 @@ Having problems or solved a problem? Check out the Islandora google groups for a
 * [Islandora Group](https://groups.google.com/forum/?hl=en&fromgroups#!forum/islandora)
 * [Islandora Dev Group](https://groups.google.com/forum/?hl=en&fromgroups#!forum/islandora-dev)
 
+## FAQ
+
+### Q. What elements are necessary in finding aid EAD metadata?
+
+A. Components (`c`, `c01`, `c02`, `c03`, _etc_) *MUST* have `id` attributes unique to the given XML document in order to reliably produce links and relationships. Components *MUST* have a `level` as one of:
+* series
+* subseries
+* file
+Additionally, as of writing, the only supported types of containers inside of components are boxes and folders. `Folder` entries *MAY* be associatited to `Boxes` using the `parent` attribute, to target the `id` given to a `box`. Alternatively, associations will be made by iterating containers and producing a new association for each "box" encountered.
+
+A minimal example of the structure we require:
+```xml
+<ead xmlns="urn:isbn:1-931666-22-9">
+  <archdesc>
+    <dsc>
+      <c01 id="alpha" level="series">
+        <!--
+          "bravo" makes use of the "parent" attribute to associate a folder
+          with a box.
+        -->
+        <c02 id="bravo" level="file">
+          <did>
+            <container id="container-one" type="box">1</container>
+            <container parent="container-one" type="folder">1</container>
+          </did>
+        </c02>
+        <!--
+          "charlie" relates containers by associating boxes and folders as they
+          occur in document order.
+        -->
+        <c02 id="charlie" level="file">
+          <container type="boxes">2-3</container>
+          <container type="box">4</container>
+          <container type="folder">1</container>
+          <container type="box">5</container>
+          <container type="folders">1-7</container>
+        </c02>
+      </c01>
+    </dsc>
+  </archdesc>
+</ead>
+```
+
+In `bravo`, we have one logical container:
+* folder 1 from box 1
+
+In `charlie`, we have three logical containers:
+* boxes 2 to 3
+* folder 1 from box 4
+* folders 1 to 7 from box 5
+
+Do note that the code tries not to make any assumptions about the numbering of boxes or folders. Folders could either be numbered sequentially across boxes (in which case specifying a range of folders could make sense when specifying a range of boxes) or specific to a box. Additionally, pluralization of types is largely ignored.
+
 ## Maintainers/Sponsors
 Current maintainers:
 
