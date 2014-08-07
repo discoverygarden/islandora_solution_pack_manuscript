@@ -127,7 +127,7 @@ function islandora_manuscript_menu() {
       'file' => 'includes/link.inc',
       'type' => MENU_CALLBACK,
     ),
-    'islandora/object/%islandora_object/manage/islandora_manuscript_ingest' => array(
+    'islandora/object/%islandora_object/manage/overview/islandora_manuscript_ingest' => array(
       'title' => 'Add a manuscript',
       'page callback' => 'islandora_manuscript_manuscript_ingest',
       'page arguments' => array(2),
