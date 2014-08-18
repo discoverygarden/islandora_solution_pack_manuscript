@@ -95,5 +95,5 @@ function islandora_manuscript_ingest_tei_datastream(AbstractObject $object, $fil
   $path = drupal_realpath($file->uri);
   $ds->setContentFromFile($path, FALSE);
   $ds->label = $file->filename;
-  $ds->mimetype = 'application/tei+xml';
+  $ds->mimetype = 'text/xml';
 }
