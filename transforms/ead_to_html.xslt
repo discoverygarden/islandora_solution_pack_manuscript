@@ -137,11 +137,24 @@
   </xsl:template>
 
   <xsl:template match="ead:container" mode="parent">
+  	<xsl:variable name="component">
+  		<xsl:if test="./../../@id">
+  			<xsl:value-of select="./../../@id"/>
+  		</xsl:if>
+  	</xsl:variable>
     <xsl:variable name="containers" select="//ead:container"/>
+  	<!-- We pass it in as a '|' deliminted string. -->
+  	<xsl:variable name="compontents">
+  		<xsl:for-each select="$containers">
+  			<xsl:if test="./../../@id">
+  				<xsl:value-of select="./../../@id"/>
+  			</xsl:if>|
+  		</xsl:for-each>
+  	</xsl:variable>
     <dd>
       <a>
         <xsl:attribute name="href">
-          <xsl:copy-of select="php:function('islandora_manuscript_build_parented_query_url', current(), $containers)"/>
+        	<xsl:copy-of select="php:function('islandora_manuscript_build_parented_query_url', current(), $component, $containers, $compontents)"/>
         </xsl:attribute>
         <xsl:apply-templates select="." mode="parent_text"/>
       </a>
