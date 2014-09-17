@@ -119,20 +119,32 @@ function template_process_islandora_manuscript_ead_display(&$variables) {
  * @param DOMElement[] $container_array
  *   An array containing a single DOMElement (this is how XSLTProcessor
  *   provides it) representing a "container" inside of an EAD document.
- * @param DOMElement[] $all
+ * @param string $component
+ *   The id of the component the current container belongs to.
+ * @param DOMElement[] $all_containers
  *   An array containing all container elements in the given EAD document.
+ * @param string $all_components
+ *   An '|' delimited string that defines the ids for all the components.
  *
  * @return string
  *   A string containing a URL to Solr search results for the given container.
  */
-function islandora_manuscript_build_parented_query_url(array $container_array, array $all) {
+function islandora_manuscript_build_parented_query_url(array $container_array, $component, array $all_containers, $all_components) {
   $object = menu_get_object('islandora_object', 2);
   if ($object) {
     $path = "islandora/object/{$object->id}/manuscript/manuscripts";
     list($container) = $container_array;
+    $all = array();
+    $all_components = explode('|', $all_components);
+    foreach ($all_containers as $key => $element) {
+      $all[] = array(
+        'container' => $element,
+        'component' => trim($all_components[$key]),
+      );
+    }
     return url($path, array(
       'query' => array(
-        'f' => islandora_manuscript_build_subfile_query($container, $all),
+        'f' => islandora_manuscript_build_subfile_query($container, $component, $all),
       ),
     ));
   }
@@ -149,18 +161,18 @@ function islandora_manuscript_build_parented_query_url(array $container_array, a
  *   filter queries.
  */
 function islandora_manuscript_build_partial_query(DOMElement $container) {
-  $subqueries = array();
+  $sub_queries = array();
   $field = islandora_manuscript_findingaid_get_solr_field($container->getAttribute('type'));
 
   $value = trim($container->nodeValue);
   if ($value != '') {
-    $subqueries[] = format_string('!field:"!value"', array(
+    $sub_queries[] = format_string('!field:"!value"', array(
       '!field' => $field,
       '!value' => $value,
     ));
   }
 
-  return $subqueries;
+  return $sub_queries;
 }
 
 /**
@@ -168,6 +180,8 @@ function islandora_manuscript_build_partial_query(DOMElement $container) {
  *
  * @param DOMElement $container
  *   An EAD container element for which to build a (part of a) query.
+ * @param string $component
+ *   The ID An EAD component element the container resides in.
  * @param DOMElement[] $all
  *   An array of all container elements in the EAD doc...  'Cause the "parent"
  *   attribute can reference any container element.
@@ -175,26 +189,26 @@ function islandora_manuscript_build_partial_query(DOMElement $container) {
  * @return string[]
  *   An array of Lucene-syntax Solr queries.
  */
-function islandora_manuscript_build_subfile_query(DOMElement $container, array $all = array()) {
-  $subqueries = islandora_manuscript_build_partial_query($container);
+function islandora_manuscript_build_subfile_query(DOMElement $container, $component, array $all = array()) {
+  $sub_queries = islandora_manuscript_build_partial_query($container);
 
   if ($container->hasAttribute('parent')) {
-    foreach ($all as $element) {
-      if ($element->getAttribute('id') == $container->getAttribute('parent')) {
-        $subqueries = array_merge(islandora_manuscript_build_subfile_query($element, $all), $subqueries);
+    foreach ($all as $item) {
+      if ($item['container']->getAttribute('id') == $container->getAttribute('parent')) {
+        $sub_queries = array_merge(islandora_manuscript_build_subfile_query($item['container'], $item['component'], $all), $sub_queries);
       }
     }
   }
-
-  $component = $container->parentNode->parentNode;
-  if ($component->hasAttribute('id')) {
-    $subqueries[] = format_string('!field:"!value"', array(
+  // There is a bug in earlier versions of LIBXML in that php code can not
+  // reference an elements parent. That's why we must also pass in the
+  // components.
+  if (!empty($component)) {
+    $sub_queries[] = format_string('!field:"!value"', array(
       '!field' => variable_get('islandora_manuscript_component_identifier_solr_field', 'dereffed_ead_component_id_ms'),
-      '!value' => $component->getAttribute('id'),
+      '!value' => $component,
     ));
   }
-
-  return $subqueries;
+  return $sub_queries;
 }
 
 /**
