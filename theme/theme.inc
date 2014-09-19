@@ -5,6 +5,8 @@
  * Theme hooks.
  */
 
+define('ISLANDORA_MANUSCRIPT_CONTAINER_TAG_URI', 'http://islandora.ca/manuscript-container');
+
 /**
  * Implements hook_preprocess_theme().
  */
@@ -76,12 +78,36 @@ function template_preprocess_islandora_manuscript_ead_display(&$variables) {
   );
   $variables['doc'] = $doc = new DOMDocument();
   $doc->loadXML($variables['object']['EAD']->content);
+
+  // XXX: Need to tag containers in order to work-around a PHP bug. See
+  // islandora_manuscript_lookup_tag() for more details on the bug.
+  // This _could_ be wrapped in version checks, so we only tag when necessary.
+  islandora_manuscript_tag_containers($doc);
+
   $variables['xslt_doc'] = $xslt_doc = new DOMDocument();
   $xslt_doc->load(drupal_get_path('module', 'islandora_manuscript') . '/transforms/ead_to_html.xslt');
 
   // Add JS for fieldsets.
   drupal_add_js('misc/form.js');
   drupal_add_js('misc/collapse.js');
+}
+
+/**
+ * Tag containers with a unique ID.
+ *
+ * Part of a work around for a PHP bug in which nodesets passed out of XSLTs
+ * are copied.
+ *
+ * @param DOMDocument $doc
+ *   A DOMDocument containing a parsed EAD document, in which we will tag all
+ *   containers with a document-unique attribute.
+ */
+function islandora_manuscript_tag_containers(DOMDocument $doc) {
+  $xpath = new DOMXPath($doc);
+  $xpath->registerNamespace('ead', 'urn:isbn:1-931666-22-9');
+  foreach ($xpath->query('//ead:container') as $index => $container) {
+    $container->setAttributeNS(ISLANDORA_MANUSCRIPT_CONTAINER_TAG_URI, 'container-tag:id', "islandora-manuscript-container-tag:$index");
+  }
 }
 
 /**
@@ -186,8 +212,8 @@ function islandora_manuscript_build_subfile_query(DOMElement $container, array $
     }
   }
 
-  $component = $container->parentNode->parentNode;
-  if ($component->hasAttribute('id')) {
+  $component = islandora_manuscript_get_container_component($container);
+  if ($component && $component->hasAttribute('id')) {
     $subqueries[] = format_string('!field:"!value"', array(
       '!field' => variable_get('islandora_manuscript_component_identifier_solr_field', 'dereffed_ead_component_id_ms'),
       '!value' => $component->getAttribute('id'),
@@ -195,6 +221,53 @@ function islandora_manuscript_build_subfile_query(DOMElement $container, array $
   }
 
   return $subqueries;
+}
+
+/**
+ * Get the component to which the given container belongs.
+ *
+ * @param DOMElement $container
+ *   A container element.
+ *
+ * @return DOMElement|bool
+ *   The parent component if we could find it; otherwise, FALSE.
+ */
+function islandora_manuscript_get_container_component(DOMElement $container) {
+  $concrete_container = isset($container->parentNode) ?
+    $container :
+    islandora_manuscript_lookup_tag($container);
+
+  return $concrete_container ?
+    $concrete_container->parentNode->parentNode :
+    FALSE;
+}
+
+/**
+ * Use our "tag" ID to look up the concrete container.
+ *
+ * Certain versions of PHP provide element copies lacking references to parent
+ * elements. To work around this, we may have "tagged" each container with a
+ * attribute, which we can use to get back to the "real" element from which it
+ * was copied.
+ *
+ * @param DOMElement $container
+ *   A container element to lookup.
+ *
+ * @return DOMElement|bool
+ *   The container if we could find it; otherwise, FALSE.
+ *
+ * @see https://github.com/php/php-src/commit/6408a1a59e6d371cd488687e28e18815ea97984e#diff-258cc1cabc37df15d7f0ed40924f64efR283
+ */
+function islandora_manuscript_lookup_tag(DOMElement $container) {
+  $tag = $container->getAttributeNS(ISLANDORA_MANUSCRIPT_CONTAINER_TAG_URI, 'id');
+  $xpath = new DOMXPath($container->ownerDocument);
+  $xpath->registerNamespace('ead', 'urn:isbn:1-931666-22-9');
+  $xpath->registerNamespace('container-tag', ISLANDORA_MANUSCRIPT_CONTAINER_TAG_URI);
+  $results = $xpath->query("//ead:container[@container-tag:id='$tag']");
+
+  return $results->length > 0 ?
+    $results->item(0) :
+    FALSE;
 }
 
 /**
