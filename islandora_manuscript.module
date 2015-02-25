@@ -602,3 +602,20 @@ function islandora_manuscript_process_islandora_object_print(array &$variables) 
     );
   }
 }
+
+/**
+ * Implements hook_islandora_paged_content_content_model_registry().
+ */
+function islandora_manuscript_islandora_paged_content_content_model_registry() {
+  return array(
+    'islandora:manuscriptCModel' => array(
+      'parents' => array(
+        'islandora:collectionCModel' => 'isMemberOfCollection',
+        'islandora:findingAidCModel' => 'isMemberOf',
+      ),
+      'children' => array(
+        'islandora:manuscriptPageCModel' => array(),
+      ),
+    ),
+  );
+}
