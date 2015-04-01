@@ -1,3 +1,4 @@
+
 <?php
 
 /**
@@ -401,7 +402,7 @@ function islandora_manuscript_islandora_xml_form_builder_get_transforms() {
 }
 
 /**
- * Implements hook_islandora_content_model_forms_form_associations().
+ * Implements hook_islandora_xml_form_builder_form_associations().
  */
 function islandora_manuscript_islandora_xml_form_builder_form_associations() {
   return array(
@@ -601,21 +602,4 @@ function islandora_manuscript_process_islandora_object_print(array &$variables) 
       ),
     );
   }
-}
-
-/**
- * Implements hook_islandora_paged_content_content_model_registry().
- */
-function islandora_manuscript_islandora_paged_content_content_model_registry() {
-  return array(
-    'islandora:manuscriptCModel' => array(
-      'parents' => array(
-        'islandora:collectionCModel' => 'isMemberOfCollection',
-        'islandora:findingAidCModel' => 'isMemberOf',
-      ),
-      'children' => array(
-        'islandora:manuscriptPageCModel' => array(),
-      ),
-    ),
-  );
 }

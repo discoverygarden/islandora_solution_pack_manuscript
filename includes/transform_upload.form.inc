@@ -38,7 +38,7 @@ function islandora_manuscript_transform_upload_form(array $form, array &$form_st
       '#title' => t('EXtensible Stylesheet Transform (XSLT 1.0 Only)'),
       '#type' => 'managed_file',
       '#required' => TRUE,
-      '#description' => filter_xss(t('Select transform file to upload.<br/>Files must be less than <b>!size MB.</b><br/>Allowed file types: <b>!ext.</b>', array('!size' => $upload_size, '!ext' => $xslt_extensions[0])), array('br', 'b')),
+      '#description' => filter_xss(t('Select transform file to upload.<br/>Files must be less than <strong>!size MB.</strong><br/>Allowed file types: <strong>!ext.</strong>', array('!size' => $upload_size, '!ext' => $xslt_extensions[0])), array('br', 'strong')),
       '#default_value' => isset($form_state['values']['xslt']) ? $form_state['values']['xslt'] : NULL,
       '#upload_location' => 'temporary://',
       '#upload_validators' => array(
@@ -51,7 +51,7 @@ function islandora_manuscript_transform_upload_form(array $form, array &$form_st
       '#title' => t('Cascading Style Sheet (CSS)'),
       '#type' => 'managed_file',
       '#required' => FALSE,
-      '#description' => filter_xss(t('Select transform file to upload.<br/>Files must be less than <b>!size MB.</b><br/>Allowed file types: <b>!ext.</b>', array('!size' => $upload_size, '!ext' => $css_extensions[0])), array('br', 'b')),
+      '#description' => filter_xss(t('Select transform file to upload.<br/>Files must be less than <strong>!size MB.</strong><br/>Allowed file types: <strong>!ext.</strong>', array('!size' => $upload_size, '!ext' => $css_extensions[0])), array('br', 'strong')),
       '#default_value' => isset($form_state['values']['css']) ? $form_state['values']['css'] : NULL,
       '#upload_location' => 'temporary://',
       '#upload_validators' => array(

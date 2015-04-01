@@ -25,7 +25,7 @@ function islandora_manuscript_tei_upload_form(array $form, array &$form_state) {
       '#title' => t('TEI (Text Encoding Initiative)'),
       '#type' => 'managed_file',
       '#required' => FALSE,
-      '#description' => filter_xss(t('Select xml file to upload.<br/>Files must be less than <b>!size MB.</b><br/>Allowed file types: <b>!ext.</b>', array('!size' => $upload_size, '!ext' => $extensions[0])), array('br', 'b')),
+      '#description' => filter_xss(t('Select xml file to upload.<br/>Files must be less than <strong>!size MB.</strong><br/>Allowed file types: <strong>!ext.</strong>', array('!size' => $upload_size, '!ext' => $extensions[0])), array('br', 'b')),
       '#default_value' => isset($form_state['values']['file']) ? $form_state['values']['file'] : NULL,
       '#upload_location' => 'temporary://',
       '#upload_validators' => array(
