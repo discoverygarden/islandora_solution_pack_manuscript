@@ -16,9 +16,9 @@
   <xsl:template match="tei:hi">
     <xsl:choose>
       <xsl:when test="@rend='bold'">
-        <strong>
+        <b>
           <xsl:apply-templates/>
-        </strong>
+        </b>s
       </xsl:when>
       <xsl:when test="@rend='italic'">
         <i>
