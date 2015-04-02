@@ -18,7 +18,7 @@
       <xsl:when test="@rend='bold'">
         <b>
           <xsl:apply-templates/>
-        </b>s
+        </b>
       </xsl:when>
       <xsl:when test="@rend='italic'">
         <i>
