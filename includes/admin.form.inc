@@ -32,9 +32,9 @@ function islandora_manuscript_admin_settings_form(array $form, array &$form_stat
         '#type' => 'checkboxes',
         '#element_validate' => array('islandora_manuscript_admin_settings_form_ingest_derivatives_validate'),
         '#options' => array(
-          'pdf' => t('PDF datastream. <b>Requires</b> <i>ImageMagick</i>'),
-          'image' => t('Image datastreams (TN, JPEG, JP2). <b>Requires</b> <i>Large Image Solution Pack</i>'),
-          'ocr' => t('OCR datastreams (OCR, HOCR). <b>Requires</b> <i>Islandora OCR module</i>'),
+          'pdf' => t('PDF datastream. <strong>Requires</strong> <em>ImageMagick</em>'),
+          'image' => t('Image datastreams (TN, JPEG, JP2). <strong>Requires</strong> <em>Large Image Solution Pack</em>'),
+          'ocr' => t('OCR datastreams (OCR, HOCR). <strong>Requires</strong> <em>Islandora OCR module</em>'),
         ),
         '#default_value' => $get_default_value('islandora_manuscript_ingest_derivatives', drupal_map_assoc(
           array('pdf', 'image', 'ocr'))),
