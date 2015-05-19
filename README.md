@@ -28,6 +28,7 @@ This module has the following recommended (optional) modules/libraries:
 * [Islandora OCR](https://github.com/Islandora/islandora_ocr)
 * [Islandora OpenSeadragon](https://github.com/Islandora/islandora_openseadragon)
 * [Islandora SOLR Search](https://github.com/Islandora/islandora_solr_search)
+* [Islandora Paged TEI Seadragon Viewer](https://github.com/discoverygarden/islandora_paged_tei_seadragon)
 
 ## Installation
 
