@@ -11,4 +11,9 @@
   <dsTypeModel ID="EAD" optional="false">
     <form MIME="text/xml"/>
   </dsTypeModel>
+  <dsTypeModel ID="TN" optional="false">
+    <form MIME="image/jpeg"/>
+    <form MIME="image/png"/>
+    <form MIME="image/gif"/>
+  </dsTypeModel>
 </dsCompositeModel>
