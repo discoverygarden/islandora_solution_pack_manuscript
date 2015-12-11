@@ -619,3 +619,23 @@ function islandora_manuscript_islandora_paged_content_content_model_registry() {
     ),
   );
 }
+
+/**
+ * Implements hook_islandora_xacml_editor_child_query().
+ */
+function islandora_manuscript_islandora_manuscriptCModel_islandora_xacml_editor_child_query(AbstractObject $object) {
+  $pages_query = <<<EOQ
+SELECT ?object from <#ri> WHERE
+{
+  ?object <fedora-rels-ext:isMemberOf> <info:fedora/{$object->id}>
+}
+EOQ;
+  return array(
+    'manuscript_pages' => array(
+      'type' => 'sparql',
+      'query' => $pages_query,
+      'description' => t('All pages of this manuscript (existing and new).'),
+      'recurse' => TRUE,
+    ),
+  );
+}
