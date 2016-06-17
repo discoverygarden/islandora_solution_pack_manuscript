@@ -4,7 +4,7 @@
 
 Allows users to create and view Manuscripts. Including the upload of TEI and XSLT and CSS documents. Users will be able to view transformed manuscript TEI (via the upload XSLT) side by side with the image(s) of the manuscript (via the Open Seadragon viewer). Users will also be able to browse Manuscripts via Box / Folder hierarchies as defined by their record in an associated finding aid.
 
-The [Connecticut Digital Archive](http://ctdigitalarchive.org/) has put together an informative user documentation guide which can be viewed [here](http://www.slideshare.net/CTDigitalArchive/how-to-use-the-manuscript-content-model).
+The [Connecticut Digital Archive](http://ctdigitalarchive.org/) has put together an [informative user documentation guide](http://www.slideshare.net/CTDigitalArchive/how-to-use-the-manuscript-content-model) that outlines the functionality of this module.
 
 ### Key Features
 
