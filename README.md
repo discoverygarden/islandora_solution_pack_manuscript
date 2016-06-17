@@ -4,6 +4,8 @@
 
 Allows users to create and view Manuscripts. Including the upload of TEI and XSLT and CSS documents. Users will be able to view transformed manuscript TEI (via the upload XSLT) side by side with the image(s) of the manuscript (via the Open Seadragon viewer). Users will also be able to browse Manuscripts via Box / Folder hierarchies as defined by their record in an associated finding aid.
 
+The [Connecticut Digital Archive](http://ctdigitalarchive.org/) has put together an informative user documentation guide which can be viewed [here](http://www.slideshare.net/CTDigitalArchive/how-to-use-the-manuscript-content-model).
+
 ### Key Features
 
 * Ability to upload TEI
@@ -37,8 +39,6 @@ Install as usual, see [this](https://drupal.org/documentation/install/modules-th
 Download/clone the [jsTree](https://github.com/vakata/jstree) library to `sites/all/libraries/jstree`. The module has been tested with the 3.0.0 release of jsTree.
 
 ## Configuration
-
-_@todo Document_
 
 ## Troubleshooting/Issues
 
