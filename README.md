@@ -38,8 +38,6 @@ Install as usual, see [this](https://drupal.org/documentation/install/modules-th
 
 Download/clone the [jsTree](https://github.com/vakata/jstree) library to `sites/all/libraries/jstree`. The module has been tested with the 3.0.0 release of jsTree.
 
-## Configuration
-
 ## Troubleshooting/Issues
 
 Having problems or solved a problem? Check out the Islandora google groups for a solution.
