@@ -16,42 +16,29 @@
  *   FALSE if there is not one.
  */
 function islandora_manuscript_get_manuscript_transform_object(AbstractObject $manuscript_object) {
-  $islandora_namespace = ISLANDORA_RELS_EXT_URI;
-  $transform_predicate = ISLANDORA_MANUSCRIPT_HAS_TRANSFORM_PREDICATE;
-  $ead_predicate = ISLANDORA_MANUSCRIPT_HAS_EAD_PREDICATE;
-  $query = <<<EOQ
-    PREFIX islandora: <$islandora_namespace>
-    SELECT ?ead ?collection ?ead_transform ?collection_transform
-    FROM <#ri>
-    WHERE {
-      {
-        <info:fedora/{$manuscript_object->id}> <fedora-rels-ext:$ead_predicate> ?ead .
-        ?ead <islandora:$transform_predicate> ?ead_transform
-      }
-      UNION {
-        <info:fedora/{$manuscript_object->id}> <fedora-rels-ext:isMemberOfCollection> ?collection .
-        ?collection <islandora:$transform_predicate> ?collection_transform
-      }
+  module_load_include('inc', 'islandora_basic_collection', 'includes/utilities');
+  $direct_transform_pid = islandora_manuscript_get_transform_pid($manuscript_object);
+  if ($direct_transform_pid) {
+    $transform = islandora_object_load($direct_transform_pid);
+    if ($transform) {
+      return $transform;
     }
-EOQ;
-  $raw_results = $manuscript_object->repository->ri->sparqlQuery($query);
-  $result = reset($raw_results);
-  if ($result['ead']['value']) {
-    $transform_pid = $result['ead_transform']['value'];
-  }
-  elseif ($result['collection']['value']) {
-    $transform_pid = $result['collection_transform']['value'];
-  }
-  if (isset($transform_pid)) {
-    return islandora_object_load($transform_pid);
   }
   else {
-    $transform_object = islandora_object_load(ISLANDORA_MANUSCRIPT_DEFAULT_TRANSFORM);
-    if ($transform_object) {
-      return $transform_object;
+    $parents = islandora_basic_collection_get_parent_pids($manuscript_object);
+    foreach ($parents as $parent) {
+      $indirect_transform_pid = islandora_manuscript_get_transform_pid(
+        islandora_object_load($parent)
+      );
+      if ($indirect_transform_pid) {
+        $transform = islandora_object_load($indirect_transform_pid);
+        if ($transform) {
+          return $transform;
+        }
+      }
     }
+    return islandora_object_load(ISLANDORA_MANUSCRIPT_DEFAULT_TRANSFORM);
   }
-  return FALSE;
 }
 
 /**
