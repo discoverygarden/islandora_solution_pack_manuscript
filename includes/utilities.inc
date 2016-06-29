@@ -12,8 +12,7 @@
  *   The object to get the transform for.
  *
  * @return mixed
- *   The transform object associated with the manuscript.
- *   FALSE if there is not one.
+ *   The return of islandora_object_load for the associated transform object.
  */
 function islandora_manuscript_get_manuscript_transform_object(AbstractObject $manuscript_object) {
   module_load_include('inc', 'islandora_basic_collection', 'includes/utilities');
