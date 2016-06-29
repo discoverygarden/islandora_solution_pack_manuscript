@@ -16,11 +16,15 @@
  */
 function islandora_manuscript_get_manuscript_transform_object(AbstractObject $manuscript_object) {
   module_load_include('inc', 'islandora_basic_collection', 'includes/utilities');
-  $direct_transform_pid = islandora_manuscript_get_transform_pid($manuscript_object);
-  if ($direct_transform_pid) {
-    $transform = islandora_object_load($direct_transform_pid);
-    if ($transform) {
-      return $transform;
+  module_load_include('inc', 'islandora_manuscript', 'includes/link');
+  $ead_object = islandora_manuscript_has_finding_aid_link($manuscript_object);
+  if ($ead_object) {
+    $direct_transform_pid = islandora_manuscript_get_transform_pid($ead_object);
+    if ($direct_transform_pid) {
+      $transform = islandora_object_load($direct_transform_pid);
+      if ($transform) {
+        return $transform;
+      }
     }
   }
   else {
