@@ -9,7 +9,7 @@ cd leptonica-1.69
 make && checkinstall --pkgname=libleptonica --pkgversion="1.69" --backup=no --deldoc=yes --fstrans=no --default
 cd ~/tesseract
 wget https://github.com/tesseract-ocr/tesseract/archive/3.02.02.tar.gz
-tar xf tesseract-ocr-3.02.02.tar.gz && rm -rf tesseract-ocr-3.02.02.tar.gz
+tar xf 3.02.02.tar.gz && rm -rf 3.02.02.tar.gz
 cd tesseract-ocr
 ./autogen.sh
 ./configure
