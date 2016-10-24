@@ -29,14 +29,15 @@ function islandora_manuscript_get_manuscript_transform_object(AbstractObject $ma
   }
   else {
     $parents = islandora_basic_collection_get_parent_pids($manuscript_object);
-    foreach ($parents as $parent) {
-      $indirect_transform_pid = islandora_manuscript_get_transform_pid(
-        islandora_object_load($parent)
-      );
-      if ($indirect_transform_pid) {
-        $transform = islandora_object_load($indirect_transform_pid);
-        if ($transform) {
-          return $transform;
+    foreach ($parents as $parent_pid) {
+      $parent = islandora_object_load($parent_pid);
+      if ($parent) {
+        $indirect_transform_pid = islandora_manuscript_get_transform_pid($parent);
+        if ($indirect_transform_pid) {
+          $transform = islandora_object_load($indirect_transform_pid);
+          if ($transform) {
+            return $transform;
+          }
         }
       }
     }
