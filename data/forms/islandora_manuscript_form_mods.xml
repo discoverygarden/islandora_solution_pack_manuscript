@@ -257,7 +257,7 @@
         <properties>
           <type>select</type>
           <access>TRUE</access>
-          <default_value>still image</default_value>
+          <default_value>mixed material</default_value>
           <options>
             <text>text</text>
             <cartographic>cartographic</cartographic>
