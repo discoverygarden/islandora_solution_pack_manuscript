@@ -25,6 +25,15 @@ function islandora_manuscript_preprocess_islandora_manuscript_manuscript(array &
   if ($viewer) {
     $variables['viewer'] = $viewer;
   }
+  $variables['display_metadata'] = variable_get('islandora_collection_metadata_display', FALSE);
+  if ($variables['display_metadata']) {
+    drupal_add_js('misc/form.js');
+    drupal_add_js('misc/collapse.js');
+    module_load_include('inc', 'islandora', 'includes/metadata');
+    $variables['parent_collections'] = islandora_get_parents_from_rels_ext($object);
+    $variables['metadata'] = islandora_retrieve_metadata_markup($object);
+    $variables['description'] = islandora_retrieve_description_markup($object);
+  }
 }
 
 /**
