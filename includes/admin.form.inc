@@ -44,11 +44,11 @@ function islandora_manuscript_admin_settings_form(array $form, array &$form_stat
     'metadata_display_fieldset' => array(
       '#type' => 'fieldset',
       '#title' => t('Metadata display'),
-      'islandora_collection_metadata_display' => array(
+      'islandora_manuscript_metadata_display' => array(
         '#type' => 'checkbox',
         '#title' => t('Display object metadata'),
         '#description' => t('Display object metadata below the collection display.'),
-        '#default_value' => variable_get('islandora_collection_metadata_display', FALSE),
+        '#default_value' => variable_get('islandora_manuscript_metadata_display', FALSE),
       ),
     ),
   );
