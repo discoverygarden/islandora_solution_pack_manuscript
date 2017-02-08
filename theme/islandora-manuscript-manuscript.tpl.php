@@ -9,8 +9,8 @@
     <?php print $viewer; ?>
   </div>
 <?php endif; ?>
-<?php if ($display_metadata): ?>
-    <div class="islandora-collection-metadata">
+<?php if ($islandora_manuscript_metadata): ?>
+    <div class="islandora-manuscript-metadata">
       <?php print $description; ?>
       <?php if ($parent_collections): ?>
           <div>
