@@ -10,7 +10,7 @@ define('ISLANDORA_MANUSCRIPT_CONTAINER_TAG_URI', 'http://islandora.ca/manuscript
 /**
  * Implements hook_preprocess_theme().
  */
-function islandora_manuscript_preprocess_islandora_manuscript_manuscript(array &$variables) {
+function template_preprocess_islandora_manuscript_manuscript(array &$variables) {
   module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
   module_load_include('inc', 'islandora_manuscript', 'includes/utilities');
   $object = $variables['object'];
@@ -39,7 +39,7 @@ function islandora_manuscript_preprocess_islandora_manuscript_manuscript(array &
 /**
  * Implements hook_preprocess_theme().
  */
-function islandora_manuscript_preprocess_islandora_manuscript_page(array &$variables) {
+function template_preprocess_islandora_manuscript_page(array &$variables) {
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   $object = $variables['object'];
   $results = $object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf');
