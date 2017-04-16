@@ -7,6 +7,7 @@
 <?php
   print $manuscript_object_id ? l(t('Return to Manuscript View'), "islandora/object/{$manuscript_object_id}") : t('Orphaned page (no associated manuscript)');
 ?>
+<?php print theme('islandora_solr_search_return_link'); ?>
 <?php if (isset($viewer)): ?>
   <div id="manuscript-page-viewer">
     <?php print $viewer; ?>
