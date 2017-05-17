@@ -10,7 +10,7 @@ make && checkinstall --pkgname=libleptonica --pkgversion="1.73" --backup=no --de
 cd ~/tesseract
 wget https://github.com/tesseract-ocr/tesseract/archive/3.04.01.tar.gz
 tar xf 3.04.01.tar.gz && rm -rf 3.04.01.tar.gz
-cd tesseract-3.04.02
+cd tesseract-3.04.01
 ./autogen.sh
 ./configure
 make && checkinstall --pkgname=tesseract-ocr --pkgversion="3.04.01" --backup=no --deldoc=yes --fstrans=no --default && ldconfig
