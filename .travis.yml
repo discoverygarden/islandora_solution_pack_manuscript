@@ -1,4 +1,6 @@
 language: php
+dist: precise
+sudo: required
 php:
   - 5.3.3
   - 5.4
