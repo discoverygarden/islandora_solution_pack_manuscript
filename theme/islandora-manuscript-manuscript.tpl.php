@@ -5,7 +5,7 @@
  */
 ?>
 <?php if (isset($viewer)): ?>
-  <div id="manuscript-viewer">
+  <div id="manuscript-viewer" class="ia-bookreader">
     <?php print $viewer; ?>
   </div>
 <?php endif; ?>
