@@ -177,7 +177,12 @@ function islandora_manuscript_pages_menu(AbstractObject $object) {
 function islandora_manuscript_theme() {
   return array(
     'islandora_manuscript_manuscript' => array(
-      'variables' => array('object' => NULL),
+      'variables' => array(
+        'object' => NULL,
+        'viewer_wrapper_attributes' => array(
+          'id' => 'manuscript-viewer',
+        ),
+      ),
       'file' => 'theme/theme.inc',
       'template' => 'theme/islandora-manuscript-manuscript',
     ),
