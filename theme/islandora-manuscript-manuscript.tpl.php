@@ -5,7 +5,7 @@
  */
 ?>
 <?php if (isset($viewer)): ?>
-  <div id="manuscript-viewer">
+  <div <?php print drupal_attributes($viewer_wrapper_attributes); ?>>
     <?php print $viewer; ?>
   </div>
 <?php endif; ?>
