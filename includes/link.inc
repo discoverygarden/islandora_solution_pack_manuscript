@@ -210,6 +210,11 @@ function islandora_manuscript_link_to_finding_aid_form($form, &$form_state, Abst
                   'default' => array(
                     'select_node' => FALSE,
                   ),
+                  'subgrp' => array(
+                    'valid_children' => array(
+                      'series',
+                    ),
+                  ),
                   'series' => array(
                     'valid_children' => array(
                       'subseries',

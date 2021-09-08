@@ -214,12 +214,12 @@ class ContainerListJSTreeBuilder extends JSTreeBuilder {
   /**
    * Inherits.
    *
-   * Only return results for series and subseries, and make a couple
+   * Only return results for subgrp, series and subseries, and make a couple
    * adjustments to the data.
    */
   protected function getComponentTree(DOMElement $element) {
     $type = $element->getAttribute('level');
-    if (in_array($type, array('series', 'subseries'))) {
+    if (in_array($type, array('subgrp', 'series', 'subseries'))) {
       $to_return = parent::getComponentTree($element);
       $to_return['a_attr']['href'] = url("islandora/object/{$this->object->id}", array('fragment' => $to_return['id']));
       $to_return['id'] = "container_list_{$to_return['id']}";

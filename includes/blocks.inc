@@ -66,6 +66,11 @@ function islandora_manuscript_container_list($object) {
                 'default' => array(
                   'select_node' => FALSE,
                 ),
+                'subgrp' => array(
+                  'valid_children' => array(
+                    'series',
+                  ),
+                ),
                 'series' => array(
                   'valid_children' => array(
                     'subseries',
