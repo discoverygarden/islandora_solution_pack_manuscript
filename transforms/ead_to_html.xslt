@@ -45,7 +45,7 @@
   </xsl:template>
 
   <!-- General display -->
-  <xsl:template match="ead:c | ead:c01 | ead:c02 | ead:c03 | ead:c04">
+  <xsl:template match="ead:c | ead:c01 | ead:c02 | ead:c03 | ead:c04 | ead:c05 | ead:c06">
     <fieldset>
       <xsl:attribute name="class">
         <xsl:text>ead-component collapsible collapsed </xsl:text>
