@@ -51,6 +51,14 @@ function islandora_manuscript_admin_settings_form(array $form, array &$form_stat
         '#default_value' => variable_get('islandora_manuscript_metadata_display', FALSE),
       ),
     ),
+    'islandora_manuscript_ead_caching' => array(
+      '#type' => 'textfield',
+      '#title' => t('Cache HTML rendering of EAD'),
+      '#description' => t("The length of time to cache the HTML rendering of EAD, e.g. \"+90 minutes\"."),
+      '#default_value' => variable_get('islandora_manuscript_ead_caching', ''),
+      '#element_validate' => array('islandora_manuscript_validate_strtotime'),
+      '#size' => 30,
+    ),
   );
 
   // Solr field containing the parent book PID.
@@ -95,6 +103,20 @@ function islandora_manuscript_admin_settings_form(array $form, array &$form_stat
 
   return system_settings_form($form);
 }
+
+/**
+ * Check if the form element is parseable by strtotime
+ *
+ * @param array $element
+ *   The element to check.
+ * @param array $form_state
+ *   The Drupal form state.
+ */
+function islandora_manuscript_validate_strtotime($element, &$form_state) {
+  if (!empty($element['#value']) && (!is_numeric(strtotime($element['#value'])) || strtotime($element['#value']) < 0)) {
+    form_error($element, t('The "!name" option must contain a valid value. You may either leave the text field empty or enter a string like "+30 minutes", "+4 hours", or "+1 week 2 days 4 hours 2 seconds".', array('!name' => t($element['#title']))));
+  }
+} 
 
 /**
  * Check if the required resources are enabled.

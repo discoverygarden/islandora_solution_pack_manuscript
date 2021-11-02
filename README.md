@@ -117,6 +117,10 @@ In `charlie`, we have three logical containers:
 
 Do note that the code tries not to make any assumptions about the numbering of boxes or folders. Folders could either be numbered sequentially across boxes (in which case specifying a range of folders could make sense when specifying a range of boxes) or specific to a box. Additionally, pluralization of types is largely ignored.
 
+### Q. What does the EAD caching feature do?
+
+A. When enabled, the EAD HTML caching will perform the XSLT transform of the EAD to HTML and then cache the resulting HTML to a temporary file, for later reuse.  This file will be written into Drupal's Temporary directory, and the last modification time will be used to gauge whether the cache expiration has been exceeded.  If Islandora Solr Search is enabled, Drupal's cron wil pre-cache any EADs. 
+
 ## Maintainers/Sponsors
 Current maintainers:
 

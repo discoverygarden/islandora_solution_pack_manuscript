@@ -52,7 +52,7 @@ function islandora_manuscript_preprocess_ead_display_variables(&$variables) {
  *   This function populates:
  *   - processor: The XSLTProcessor instance which was used.
  *   - markup_doc: A DOMDocument containing the markup to output, after
- *     this function has run.
+ *     this function has run, iff not cached.
  */
 function islandora_manuscript_process_ead_display_variables(&$variables) {
   $variables['processor'] = $proc = new XSLTProcessor();
@@ -61,8 +61,19 @@ function islandora_manuscript_process_ead_display_variables(&$variables) {
     $proc->setParameter($namespace_uri, $parameters);
   }
   $proc->registerPhpFunctions($variables['xslt_functions']);
-  $variables['markup_doc'] = $proc->transformToDoc($variables['doc']);
-  $variables['rendered_ead_html'] = $variables['markup_doc']->saveXML($variables['markup_doc']->documentElement);
+  $variables['rendered_ead_html'] = islandora_manuscript_getcache_eadhtml($variables['object']->id);
+  if (!$variables['rendered_ead_html']) {
+    // TODO: handle this failure more elegantly
+    // Pending that, write a default template out to the cache so that when we die unexpectedly in $proc->transformToDoc($variables['doc'])
+    // we don't pick up and retry this same object again immediately
+    $failureContent = theme('islandora_manuscript_ead_display_failure', $variables);
+    islandora_manuscript_setcache_eadhtml($variables['object']->id, $failureContent);
+    $variables['markup_doc'] = $proc->transformToDoc($variables['doc']);
+    $variables['rendered_ead_html'] = $variables['markup_doc']->saveXML($variables['markup_doc']->documentElement);
+    islandora_manuscript_setcache_eadhtml($variables['object']->id, $variables['rendered_ead_html']); 
+  } else {
+    $variables['markup_doc'] = null;
+  }
 }
 
 
@@ -287,3 +298,68 @@ function islandora_manuscript_build_flat_subfile_query(array $containers) {
   // Merge down to single array.
   return empty($parts) ? array() : call_user_func_array('array_merge', $parts);
 }
+
+/**
+ * Return the path to the cache of EAD HTML files
+ * @return string The path to the files
+ */
+function islandora_manuscript_cache_eadhtml_path() {
+  return file_directory_temp() . DIRECTORY_SEPARATOR . 'islandora_manuscript_eadhtml' . DIRECTORY_SEPARATOR;
+}
+
+/**
+ * Return the suffix to the cached EAD HTML files
+ * @return string The suffix to the files
+ */
+function islandora_manuscript_cache_eadhtml_suffix() {
+  return '.cache';
+}
+
+
+/**
+ * Get a rendered EAD to HTML transform, indexed by object id
+ * 
+ * @param string $objectid The object's PID
+ * @return string|boolean The HTML result of the transformation, or false if none
+ */
+function islandora_manuscript_getcache_eadhtml($objectid) {
+  if (!variable_get('islandora_manuscript_ead_caching', false)) {
+    return false;
+  }
+  $cached_output = false;
+  $cachepath = islandora_manuscript_cache_eadhtml_path();
+  $cachekey = md5($objectid).islandora_manuscript_cache_eadhtml_suffix();
+  if (file_exists($cachepath.$cachekey)) {
+    $updated = filemtime($cachepath.$cachekey);
+    if ($updated + strtotime(variable_get('islandora_manuscript_ead_caching', '')) - time() > time()) {
+      $cache = file_get_contents($cachepath.$cachekey);
+      if (isset($cache)) {
+        $cached_output = $cache;
+      }
+    }
+  }
+  return $cached_output;
+}
+
+/**
+ * Cache a rendered EAD to HTML transform, indexed by object id
+ * We are caching into the temp directory instead of using Drupal's
+ * native cache function because the HTML will probably exceed size limits
+ * for the native cache configuration.
+ * 
+ * @param string $objectid The object's PID
+ * @param string $html The HTML result of the XSLT transform
+ * @return boolean Success
+ */
+function islandora_manuscript_setcache_eadhtml($objectid, $html) {
+  if (!variable_get('islandora_manuscript_ead_caching', false)) {
+    return false;
+  }
+  $cachepath = islandora_manuscript_cache_eadhtml_path();
+  if (!file_exists($cachepath)) {
+    mkdir($cachepath);
+  }
+  $cachekey = md5($objectid).islandora_manuscript_cache_eadhtml_suffix();
+  return (boolean) file_put_contents($cachepath.$cachekey, $html);
+}
+

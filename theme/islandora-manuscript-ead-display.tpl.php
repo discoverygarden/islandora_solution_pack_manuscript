@@ -14,7 +14,7 @@
  * - $xslt_doc: A DOMDocument containing the parsed XSLT to run.
  * - $processor: The XSLTProcessor instance which was used.
  * - $markup_doc: A DOMDocument containing the markup to output, after
- *     this function has run.
+ *     this function has run.  If the cache was used, this will be null!
  * - $rendered_ead_html: The rendered HTML from the $markup_doc transform
  */
 ?>
