@@ -9,6 +9,10 @@
 >
   <xsl:param name="container_string">Containers</xsl:param>
 
+  <xsl:param name="call_query_link" />
+  <xsl:param name="call_direct_link" />
+  <xsl:param name="direct_link_prefix" />
+
   <xsl:template match="/">
     <div class="ead">
       <xsl:apply-templates select="//ead:archdesc"/>
@@ -79,6 +83,16 @@
       <dl>
         <xsl:copy-of select="$contents"/>
       </dl>
+      <xsl:if test="count(ead:dao[@xlink:href])">
+        <xsl:variable name="xlinks">
+          <xsl:call-template name="ead_dao_xlink" />
+        </xsl:variable>
+        <xsl:if test="normalize-space($xlinks)">
+          <ul class="ead_daos">
+            <xsl:copy-of select="$xlinks" />
+          </ul>
+        </xsl:if>
+      </xsl:if>
     </xsl:if>
   </xsl:template>
 
@@ -114,13 +128,25 @@
   </xsl:template>
 
   <xsl:template name="flat_container">
+    <xsl:variable name="query_url">
+      <xsl:if test="$call_query_link = 'true'">
+        <xsl:value-of select="php:function('islandora_manuscript_build_flat_query_url', ead:container)" />
+      </xsl:if>
+    </xsl:variable>
     <dd>
-      <a>
-        <xsl:attribute name="href">
-          <xsl:copy-of select="php:function('islandora_manuscript_build_flat_query_url', ead:container)"/>
-        </xsl:attribute>
+      <xsl:choose>
+      <xsl:when test="normalize-space($query_url)">
+        <a>
+          <xsl:attribute name="href">
+            <xsl:value-of select="$query_url"/>
+          </xsl:attribute>
+          <xsl:apply-templates select="ead:container[1]" mode="flat_text"/>
+        </a>
+      </xsl:when>
+      <xsl:otherwise>
         <xsl:apply-templates select="ead:container[1]" mode="flat_text"/>
-      </a>
+      </xsl:otherwise>
+      </xsl:choose>
     </dd>
   </xsl:template>
   <xsl:template match="ead:container" mode="flat_text">
@@ -138,15 +164,28 @@
 
   <xsl:template match="ead:container" mode="parent">
     <xsl:variable name="containers" select="//ead:container"/>
+    <xsl:variable name="query_url">
+      <xsl:if test="$call_query_link = 'true'">
+        <xsl:value-of select="php:function('islandora_manuscript_build_parented_query_url', current(), $containers)" />
+      </xsl:if>
+    </xsl:variable>
     <dd>
-      <a>
-        <xsl:attribute name="href">
-          <xsl:copy-of select="php:function('islandora_manuscript_build_parented_query_url', current(), $containers)"/>
-        </xsl:attribute>
+      <xsl:choose>
+      <xsl:when test="normalize-space($query_url)">
+        <a>
+          <xsl:attribute name="href">
+            <xsl:copy-of select="$query_url"/>
+          </xsl:attribute>
+          <xsl:apply-templates select="." mode="parent_text"/>
+        </a>
+      </xsl:when>
+      <xsl:otherwise>
         <xsl:apply-templates select="." mode="parent_text"/>
-      </a>
+      </xsl:otherwise>
+      </xsl:choose>
     </dd>
   </xsl:template>
+
   <xsl:template match="ead:container" mode="parent_text">
     <xsl:variable name="parent" select="@parent"/>
     <xsl:variable name="parents">
@@ -159,6 +198,35 @@
     <xsl:value-of select="@type"/>
     <xsl:text> </xsl:text>
     <xsl:apply-templates/>
+  </xsl:template>
+
+  <xsl:template name="ead_dao_xlink">
+    <xsl:for-each select="ead:dao[@xlink:href]">
+    <xsl:variable name="direct_url">
+      <xsl:if test="$call_direct_link = 'true'">
+        <!--
+        N.b.: unused but reserved for future use if logic becomes more complex than a simple prefix
+        <xsl:value-of select="php:function('islandora_manuscript_build_direct_url', @xlink:href)" />
+        -->
+        <xsl:value-of select="$direct_link_prefix" /><xsl:value-of select="@xlink:href" />
+      </xsl:if>
+    </xsl:variable>
+    <li>
+      <xsl:choose>
+      <xsl:when test="normalize-space($direct_url)">
+        <a>
+          <xsl:attribute name="href">
+            <xsl:value-of select="$direct_url" />
+          </xsl:attribute>
+          <xsl:value-of select="ead:daodesc" />
+        </a>
+      </xsl:when>
+      <xsl:otherwise>
+      </xsl:otherwise>
+        <xsl:value-of select="ead:daodesc" />
+      </xsl:choose>
+    </li>
+    </xsl:for-each>
   </xsl:template>
 
   <xsl:template match="text()" mode="did_list"/>

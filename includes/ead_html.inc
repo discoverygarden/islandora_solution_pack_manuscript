@@ -25,6 +25,9 @@ function islandora_manuscript_preprocess_ead_display_variables(&$variables) {
   $variables['xslt_parameters'][''] = (isset($variables['xslt_parameters']['']) ? $variables['xslt_parameters'][''] : array()) + array(
     "container_string" => t('Containers'),
   );
+  $variables['xslt_parameters']['']['call_query_link'] = variable_get('islandora_manuscript_query_enable', true) ? 'true' : 'false';
+  $variables['xslt_parameters']['']['call_direct_link'] = variable_get('islandora_manuscript_direct_enable', false) ? 'true' : false;
+  $variables['xslt_parameters']['']['direct_link_prefix'] = variable_get('islandora_manuscript_component_xlink_prefix', '');
   $variables['doc'] = $doc = new DOMDocument();
   $doc->loadXML($variables['object']['EAD']->content);
 
@@ -287,3 +290,23 @@ function islandora_manuscript_build_flat_subfile_query(array $containers) {
   // Merge down to single array.
   return empty($parts) ? array() : call_user_func_array('array_merge', $parts);
 }
+
+ /**
+ * Callback used in XSLT to build a direct URL.
+ * N.b.: unused, but reserved for future use if logic becomes more complex than a simple prefix
+ *
+ * @param DOMAttribute[] $xlink
+ *   An array containing a single DOMAttribute (this is how XSLTProcessor
+ *   provides it) representing the xlink attribute for a DAO
+ *
+ * @return string
+ *   A string containing a URL to the given object.
+ */
+function islandora_manuscript_build_direct_url(array $xlink) {
+  if ($xlink[0] && variable_get('islandora_manuscript_direct_enable', false)) {
+    $path = variable_get('islandora_manuscript_component_xlink_prefix', '') . $xlink[0]->value;
+    return url($path);
+  }
+}
+
+

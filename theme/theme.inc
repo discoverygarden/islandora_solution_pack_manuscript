@@ -104,4 +104,3 @@ function template_process_islandora_manuscript_ead_display(&$variables) {
   islandora_manuscript_process_ead_display_variables($variables);
 }
 
-
