@@ -84,8 +84,8 @@ class JSTreeBuilder {
    *     Never actually got used?
    */
   protected function getComponentTree(DOMElement $element) {
-    $title = $this->xpath->evaluate('normalize-space(string(ead:did/ead:unittitle/text()))', $element);
-    $date = $this->xpath->evaluate('normalize-space(string(ead:did/ead:unitdate/text()))', $element);
+    $title = $this->xpath->evaluate('normalize-space(string(ead:did/ead:unittitle/descendant-or-self::*/text()))', $element);
+    $date = $this->xpath->evaluate('normalize-space(string(ead:did/ead:unitdate/descendant-or-self::*/text()))', $element);
     $text = empty($date) ?
       $title :
       format_string('@title (@date)', array(
