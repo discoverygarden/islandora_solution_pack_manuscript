@@ -23,8 +23,29 @@ define('ISLANDORA_MANUSCRIPT_CONTAINER_TAG_URI', 'http://islandora.ca/manuscript
  */
 function islandora_manuscript_preprocess_ead_display_variables(&$variables) {
   $variables['xslt_parameters'][''] = (isset($variables['xslt_parameters']['']) ? $variables['xslt_parameters'][''] : array()) + array(
+    "containerlist_string" => t('Container List'),
     "container_string" => t('Containers'),
+    "unitid_string" => t('Unit Id'),
+    "physdesc_string" => t('Extent'),
+    "physloc_string" => t('Physical Location'),
+    "langmaterial_string" => t('Language'),
+    "controlaccess_string" => t('Subjects'),
+    "corpname_string" => t('Corporate Names'),
+    "persname_string" => t('Personal Names'),
+    "famname_string" => t('Family Names'),
+    "geogname_string" => t('Geographic Names'),
+    "occupation_string" => t('Occupations'),
+    "subject_string" => t('Other Subjects'),
+    "genreform_string" => t('Genres'),
+    "recordgrp_string" => t('Record Group'),
+    "subgrp_string" => t('Subgroup'),
+    "series_string" => t('Series'),
+    "subseries_string" => t('Subseries'),
+    "subfonds" => t('Subfonds'),
+    "file_string" => t('File'),
+    "item_string" => t('Item'),
   );
+
   $variables['doc'] = $doc = new DOMDocument();
   $doc->loadXML($variables['object']['EAD']->content);
 
