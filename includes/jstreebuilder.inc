@@ -84,6 +84,7 @@ class JSTreeBuilder {
    *     Never actually got used?
    */
   protected function getComponentTree(DOMElement $element) {
+    $unitid = $this->xpath->evaluate('normalize-space(string(ead:did/ead:unitid/descendant-or-self::*/text()))', $element);
     $title = $this->xpath->evaluate('normalize-space(string(ead:did/ead:unittitle/descendant-or-self::*/text()))', $element);
     $date = $this->xpath->evaluate('normalize-space(string(ead:did/ead:unitdate/descendant-or-self::*/text()))', $element);
     $text = empty($date) ?
@@ -92,6 +93,9 @@ class JSTreeBuilder {
         '@title' => $title,
         '@date' => $date,
       ));
+    if ($unitid) {
+      $text = $unitid.' '.$text;
+    }
     $info = array(
       'id' => $element->getAttribute('id'),
       'text' => $text,
