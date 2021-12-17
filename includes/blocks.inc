@@ -49,6 +49,10 @@ function islandora_manuscript_container_list($object) {
   );
   module_load_include('inc', 'islandora_manuscript', 'includes/jstreebuilder');
   $builder = new \Islandora\Manuscript\ContainerListJSTreeBuilder($object);
+  $structure = $builder->getTreeStructure();
+  if (empty($structure)) {
+    return;
+  }
   $form['tree']['#attached']['js'][] = array(
     'type' => 'setting',
     'data' => array(
@@ -58,7 +62,7 @@ function islandora_manuscript_container_list($object) {
             $id => array(
               'core' => array(
                 'multiple' => FALSE,
-                'data' => $builder->getTreeStructure(),
+                'data' => $structure,
               ),
               'plugins' => array('types'),
               'types' => array(
