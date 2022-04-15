@@ -516,6 +516,10 @@
       <xsl:value-of select="text()"/>
     </a>
   </xsl:template>
+
+  <xsl:template match="ead:emph[@render='italic']|ead:title[@render='italic']">
+   <i><xsl:apply-templates select="node()"/></i>
+  </xsl:template>
   <!-- end of general display stuff -->
 
   <xsl:template name="capitalize">
