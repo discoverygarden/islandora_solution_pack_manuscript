@@ -84,9 +84,9 @@ class JSTreeBuilder {
    *     Never actually got used?
    */
   protected function getComponentTree(DOMElement $element) {
-    $unitid = $this->xpath->evaluate('normalize-space(string(ead:did/ead:unitid/descendant-or-self::*/text()))', $element);
-    $title = $this->xpath->evaluate('normalize-space(string(ead:did/ead:unittitle/descendant-or-self::*/text()))', $element);
-    $date = $this->xpath->evaluate('normalize-space(string(ead:did/ead:unitdate/descendant-or-self::*/text()))', $element);
+    $unitid = $this->stringifyNode('ead:did/ead:unitid', $element);
+    $title = $this->stringifyNode('ead:did/ead:unittitle', $element);
+    $date = $this->stringifyNode('ead:did/ead:unitdate', $element);
     $text = empty($date) ?
       $title :
       format_string('@title (@date)', array(
@@ -101,12 +101,24 @@ class JSTreeBuilder {
       'text' => $text,
       'type' => $element->getAttribute('level'),
       'children' => array_merge(
-        $this->getLevel('ead:c01 | ead:c02 | ead:c03 | ead:c04 | ead:c05 | ead:c', $element),
+        $this->getLevel('ead:c01 | ead:c02 | ead:c03 | ead:c04 | ead:c05 | ead:c06 | ead:c07 | ead:c08 | ead:c09 | ead:c', $element),
         $this->getContainers($element)
       ),
       'path' => $element->getNodePath(),
     );
     return $info;
+  }
+
+  /**
+   * Given the xpath to a single node in a DOMElement,
+   * return the text content of the node and its children
+   * @param string $xpath Path to a single node
+   * @param DOMElement $element Element which may contain the xpath
+   * @return string The textContent of the node, or an empty string if no node is found
+   */
+  protected function stringifyNode($xpath, DOMElement $element) {
+    $node = $this->xpath->query($xpath, $element)->item(0);
+    return $node ? $node->textContent : '';
   }
 
   /**
