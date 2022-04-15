@@ -122,12 +122,18 @@
 
   <!-- General display -->
   <xsl:template match="ead:c | ead:c01 | ead:c02 | ead:c03 | ead:c04 | ead:c05 | ead:c06">
-    <!-- use a fieldset for containers which have containers (or are direct decendents of archdesc's dsc, and a ul for top level container contents -->
-    <xsl:choose>
-    <xsl:when test="ead:c | ead:c01 | ead:c02 | ead:c03 | ead:c04 | ead:c05 | ead:c06 | ../../../ead:archdesc">
     <fieldset>
       <xsl:attribute name="class">
-        <xsl:text>ead-component collapsible collapsed </xsl:text>
+        <xsl:text>ead-component collapsible </xsl:text>
+        <!-- fieldsets without components are uncollapsed leaves; fieldsets with components default as collapsed -->
+        <xsl:choose>
+          <xsl:when test="not(ead:c | ead:c01 | ead:c02 | ead:c03 | ead:c04 | ead:c05 | ead:c06 | ead:c07 | ead:c08 | ead:c09)">
+            <xsl:text>ead-leaf-fieldset </xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>collapsed </xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
         <xsl:value-of select="concat('ead-component-', local-name())"/>
         <xsl:text> </xsl:text>
         <xsl:value-of select="concat('ead-component-type-', @level)"/>
@@ -161,44 +167,6 @@
         <xsl:apply-templates/>
       </div>
     </fieldset>
-    </xsl:when>
-    <xsl:otherwise>
-      <ul>
-        <xsl:attribute name="id">
-          <xsl:call-template name="get_id"/>
-        </xsl:attribute>
-      <xsl:for-each select="ead:did">
-      <li class="ead-leaf-did">
-         <div class="ead-leaf-container">
-          <xsl:if test="ead:unitid">
-            <span class="ead-leaf-level">
-              <xsl:if test="../@level">
-                <xsl:call-template name="decode_level">
-                  <xsl:with-param name="input" select="../@level" />
-                </xsl:call-template>
-                <xsl:text> </xsl:text>
-              </xsl:if>
-            </span>
-            <span class="ead-leaf-unitid">
-              <xsl:value-of select="ead:unitid" />
-              <xsl:text> </xsl:text>
-            </span>
-          </xsl:if>
-          <span class="ead-leaf-title"><xsl:apply-templates select="ead:unittitle"/></span>
-          <xsl:if test="normalize-space(ead:unittitle) and normalize-space(ead:unitdate)"><xsl:text>, </xsl:text></xsl:if>
-          <span class="ead-leaf-date"><xsl:value-of select="ead:unitdate"/></span>
-        </div>
-       <xsl:apply-templates select="." />
-      </li>
-      </xsl:for-each>
-      <xsl:if test="ead:*[not(self::ead:did)]">
-        <li class="ead-leaf-notdid">
-          <xsl:apply-templates select="ead:*[not(self::ead:did)]" />
-        </li>
-      </xsl:if>
-      </ul>
-    </xsl:otherwise>
-    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="ead:did">
