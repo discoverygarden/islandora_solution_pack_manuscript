@@ -84,6 +84,7 @@ class JSTreeBuilder {
    *     Never actually got used?
    */
   protected function getComponentTree(DOMElement $element) {
+    $level = $this->translateLevelCode($this->xpath->evaluate('string(./@level)', $element));
     $unitid = $this->stringifyNode('ead:did/ead:unitid', $element);
     $title = $this->stringifyNode('ead:did/ead:unittitle', $element);
     $date = $this->stringifyNode('ead:did/ead:unitdate', $element);
@@ -95,6 +96,9 @@ class JSTreeBuilder {
       ));
     if ($unitid) {
       $text = $unitid.' '.$text;
+    }
+    if ($level) {
+      $text = $level.' '.$text;
     }
     $info = array(
       'id' => $element->getAttribute('id'),
@@ -108,6 +112,28 @@ class JSTreeBuilder {
     );
     return $info;
   }
+
+  /**
+   * Given the string of a component's level
+   * return a human-readable representation
+   * @param string $level the code from an EAD component's level attribute
+   * @return string A human-readable representation
+   */
+  protected function translateLevelCode($level) {
+    $value = '';
+    switch ($level) {
+      case 'recordgrp':
+        $value = t('Record Group');
+        break;
+      case 'subgrp':
+        $value = t('Subgroup');
+        break;
+      default:
+        $value = t(ucfirst($level));
+    }
+    return $value;
+  }
+
 
   /**
    * Given the xpath to a single node in a DOMElement,
