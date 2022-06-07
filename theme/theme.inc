@@ -89,6 +89,9 @@ function template_preprocess_islandora_manuscript_ead_display(&$variables) {
   // Add JS for fieldsets.
   drupal_add_js('misc/form.js');
   drupal_add_js('misc/collapse.js');
+  // Add JS for finding aid.
+  $mod_path = drupal_get_path('module', 'islandora_manuscript');
+  drupal_add_js($mod_path.'/js/findingaid.js');
 }
 
 /**
