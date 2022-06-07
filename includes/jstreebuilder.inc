@@ -62,7 +62,10 @@ class JSTreeBuilder {
     $list = $this->xpath->query($query, $node);
     $roots = array();
     foreach ($list as $component) {
-      $roots[] = $this->getComponentTree($component);
+      $root = $this->getComponentTree($component);
+      if ($root) {
+        $roots[] = $root;
+      }
     }
     return $roots;
   }
@@ -84,25 +87,67 @@ class JSTreeBuilder {
    *     Never actually got used?
    */
   protected function getComponentTree(DOMElement $element) {
-    $title = $this->xpath->evaluate('normalize-space(string(ead:did/ead:unittitle/text()))', $element);
-    $date = $this->xpath->evaluate('normalize-space(string(ead:did/ead:unitdate/text()))', $element);
+    $level = $this->translateLevelCode($this->xpath->evaluate('string(./@level)', $element));
+    $unitid = $this->stringifyNode('ead:did/ead:unitid', $element);
+    $title = $this->stringifyNode('ead:did/ead:unittitle', $element);
+    $date = $this->stringifyNode('ead:did/ead:unitdate', $element);
     $text = empty($date) ?
       $title :
       format_string('@title (@date)', array(
         '@title' => $title,
         '@date' => $date,
       ));
+    if ($unitid) {
+      $text = $unitid.' '.$text;
+    }
+    if ($level) {
+      $text = $level.' '.$text;
+    }
     $info = array(
       'id' => $element->getAttribute('id'),
       'text' => $text,
       'type' => $element->getAttribute('level'),
       'children' => array_merge(
-        $this->getLevel('ead:c01 | ead:c02 | ead:c03 | ead:c04 | ead:c05 | ead:c', $element),
+        $this->getLevel('ead:c01 | ead:c02 | ead:c03 | ead:c04 | ead:c05 | ead:c06 | ead:c07 | ead:c08 | ead:c09 | ead:c', $element),
         $this->getContainers($element)
       ),
       'path' => $element->getNodePath(),
     );
     return $info;
+  }
+
+  /**
+   * Given the string of a component's level
+   * return a human-readable representation
+   * @param string $level the code from an EAD component's level attribute
+   * @return string A human-readable representation
+   */
+  protected function translateLevelCode($level) {
+    $value = '';
+    switch ($level) {
+      case 'recordgrp':
+        $value = t('Record Group');
+        break;
+      case 'subgrp':
+        $value = t('Subgroup');
+        break;
+      default:
+        $value = t(ucfirst($level));
+    }
+    return $value;
+  }
+
+
+  /**
+   * Given the xpath to a single node in a DOMElement,
+   * return the text content of the node and its children
+   * @param string $xpath Path to a single node
+   * @param DOMElement $element Element which may contain the xpath
+   * @return string The textContent of the node, or an empty string if no node is found
+   */
+  protected function stringifyNode($xpath, DOMElement $element) {
+    $node = $this->xpath->query($xpath, $element)->item(0);
+    return $node ? $node->textContent : '';
   }
 
   /**
