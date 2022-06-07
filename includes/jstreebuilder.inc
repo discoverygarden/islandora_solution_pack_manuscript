@@ -62,7 +62,10 @@ class JSTreeBuilder {
     $list = $this->xpath->query($query, $node);
     $roots = array();
     foreach ($list as $component) {
-      $roots[] = $this->getComponentTree($component);
+      $root = $this->getComponentTree($component);
+      if ($root) {
+        $roots[] = $root;
+      }
     }
     return $roots;
   }
