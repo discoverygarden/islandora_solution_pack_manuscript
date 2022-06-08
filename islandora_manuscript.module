@@ -180,7 +180,7 @@ function islandora_manuscript_theme() {
       'variables' => array(
         'object' => NULL,
         'viewer_wrapper_attributes' => array(
-          'id' => 'manuscript-viewer',
+          'id' => 'book-viewer',
         ),
       ),
       'file' => 'theme/theme.inc',
