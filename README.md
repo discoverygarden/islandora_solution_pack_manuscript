@@ -117,6 +117,14 @@ In `charlie`, we have three logical containers:
 
 Do note that the code tries not to make any assumptions about the numbering of boxes or folders. Folders could either be numbered sequentially across boxes (in which case specifying a range of folders could make sense when specifying a range of boxes) or specific to a box. Additionally, pluralization of types is largely ignored.
 
+### Q. How are links generated from the Finding Aid to digitized objects?
+
+A. Links will be generated from the EAD rendering to digitized objects in one or more of two ways:
+
+1) If the child objects have Solr metadata which points to the EAD object, box identifier, folder identifier, and component id, search queries will be formulated from the Finding Aid to the matching digital objects.  This is configured in the settings form, under the heading "Link Objects by Query".
+
+2) If the DAOs in the EAD have links in the xlink namespace which point to paths identifying the digital objects, these URIs can be embedded (with an optional prefix) within the Finding Aid display.  Examples could be where the DAO's href might point to a link resolver, a DOI, relative or absolute URI, or a Fedora PID.  This is configured in the settings form, under the heading "Link Objects by DAO xlink".
+
 ## Maintainers/Sponsors
 Current maintainers:
 

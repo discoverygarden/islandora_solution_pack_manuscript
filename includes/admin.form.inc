@@ -53,35 +53,64 @@ function islandora_manuscript_admin_settings_form(array $form, array &$form_stat
     ),
   );
 
+  $form['islandora_manuscript_query_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Link objects by query'),
+    'islandora_manuscript_query_enable' => array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable query link'),
+      '#description' => t('Present links from containers within the Finding Aid by querying parent, box, and folder values within the children\'s metadata.'),
+      '#default_value' => variable_get('islandora_manuscript_query_enable', TRUE),
+    ),
+  );
+
   // Solr field containing the parent book PID.
-  $form['islandora_manuscript_parent_manuscript_solr_field'] = array(
+  $form['islandora_manuscript_query_fieldset']['islandora_manuscript_parent_manuscript_solr_field'] = array(
     '#type' => 'textfield',
     '#title' => t('Parent Solr Field'),
     '#description' => t("Solr field containing the parent Manuscript's PID."),
     '#default_value' => variable_get('islandora_manuscript_parent_manuscript_solr_field', 'RELS_EXT_isMemberOf_uri_ms'),
     '#size' => 30,
   );
-  $form['islandora_manuscript_box_identifier_solr_field'] = array(
+  $form['islandora_manuscript_query_fieldset']['islandora_manuscript_box_identifier_solr_field'] = array(
     '#type' => 'textfield',
     '#title' => t('Manuscript Box Solr Field'),
     '#description' => t("Solr field containing the box identifier, on manuscript objects."),
     '#default_value' => variable_get('islandora_manuscript_box_identifier_solr_field', 'mods_relatedItem_host_part_detail_box_number_ms'),
     '#size' => 30,
   );
-  $form['islandora_manuscript_folder_identifier_solr_field'] = array(
+  $form['islandora_manuscript_query_fieldset']['islandora_manuscript_folder_identifier_solr_field'] = array(
     '#type' => 'textfield',
     '#title' => t('Manuscript Folder Solr Field'),
     '#description' => t("Solr field containing the folder identifier, on manuscript objects."),
     '#default_value' => variable_get('islandora_manuscript_folder_identifier_solr_field', 'mods_relatedItem_host_part_detail_folder_number_ms'),
     '#size' => 30,
   );
-  $form['islandora_manuscript_component_identifier_solr_field'] = array(
+  $form['islandora_manuscript_query_fieldset']['islandora_manuscript_component_identifier_solr_field'] = array(
     '#type' => 'textfield',
     '#title' => t('Component ID Solr Field'),
     '#description' => t("Solr field containing the identifier, on manuscript objects."),
     '#default_value' => variable_get('islandora_manuscript_component_identifier_solr_field', 'dereffed_ead_component_id_ms'),
     '#size' => 30,
   );
+  $form['islandora_manuscript_direct_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Link objects by DAO xlink'),
+    'islandora_manuscript_direct_enable' => array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable xlink'),
+      '#description' => t('Present xlinks present on the DAO as links within the Finding Aid.'),
+      '#default_value' => variable_get('islandora_manuscript_direct_enable', FALSE),
+    ),
+    'islandora_manuscript_component_xlink_prefix' => array(
+      '#type' => 'textfield',
+      '#title' => t('Component xlink prefix'),
+      '#description' => t("The URI prefix for xlink refrences on manuscript component DAOs"),
+      '#default_value' => variable_get('islandora_manuscript_component_xlink_prefix', ''),
+      '#size' => 30,
+    ),
+  );
+
 
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   $form += islandora_viewers_form('islandora_manuscript_viewers', NULL, 'islandora:manuscriptCModel');
