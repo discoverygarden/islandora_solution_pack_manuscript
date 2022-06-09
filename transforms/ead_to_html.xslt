@@ -136,7 +136,7 @@
     <dd>
       <xsl:choose>
       <xsl:when test="normalize-space($query_url)">
-        <a>
+        <a class="ead-external-link">
           <xsl:attribute name="href">
             <xsl:value-of select="$query_url"/>
           </xsl:attribute>
@@ -172,7 +172,7 @@
     <dd>
       <xsl:choose>
       <xsl:when test="normalize-space($query_url)">
-        <a>
+        <a class="ead-external-link">
           <xsl:attribute name="href">
             <xsl:copy-of select="$query_url"/>
           </xsl:attribute>
@@ -214,7 +214,7 @@
     <li>
       <xsl:choose>
       <xsl:when test="normalize-space($direct_url)">
-        <a>
+        <a class="ead-external-link">
           <xsl:attribute name="href">
             <xsl:value-of select="$direct_url" />
           </xsl:attribute>
@@ -239,7 +239,7 @@
   </xsl:template>
 
   <xsl:template match="ead:extref">
-    <a>
+    <a class="ead-external-link">
       <xsl:attribute name="href">
         <xsl:value-of select="@xlink:href"/>
       </xsl:attribute>
