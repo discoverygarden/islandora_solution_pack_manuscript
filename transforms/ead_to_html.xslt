@@ -266,7 +266,7 @@
 
   <xsl:template name="flat_container">
     <dd class="ead-container ead-container-flat">
-      <a>
+      <a class="ead-external-link">
         <xsl:attribute name="href">
           <xsl:copy-of select="php:function('islandora_manuscript_build_flat_query_url', ead:container)"/>
         </xsl:attribute>
@@ -296,7 +296,7 @@
   <xsl:template match="ead:container" mode="parent">
     <xsl:variable name="containers" select="//ead:container"/>
     <dd class="ead-container ead-container-nested">
-      <a>
+      <a class="ead-external-link">
         <xsl:attribute name="href">
           <xsl:copy-of select="php:function('islandora_manuscript_build_parented_query_url', current(), $containers)"/>
         </xsl:attribute>
@@ -509,7 +509,7 @@
   </xsl:template>
 
   <xsl:template match="ead:extref">
-    <a>
+    <a class="ead-external-link">
       <xsl:attribute name="href">
         <xsl:value-of select="@xlink:href"/>
       </xsl:attribute>

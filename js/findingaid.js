@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   // when clicking on a link within a fieldset, provide a reference in the browser history back to the anchor
   // this allows a user to navigate "back" to the original position in the finding aid
-  let links = document.querySelectorAll('div.ead div.fieldset-wrapper[id] a');
+  let links = document.querySelectorAll('div.ead div.fieldset-wrapper[id] a.ead-external-link');
   if (links !== null) {
     for (let index = 0; index < links.length; ++index) {
       let target = links[index].closest('div.fieldset-wrapper[id]');
