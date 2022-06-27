@@ -24,8 +24,6 @@
     <xsl:apply-templates select="ead:p"/>
   </xsl:template>
 
-  <xsl:template match="ead:processinfo"/>
-
   <!--
     Helper template to allow the use of IDs from EAD.
 
