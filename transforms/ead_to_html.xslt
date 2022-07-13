@@ -26,6 +26,7 @@
   <xsl:param name="subgrp_string">Subgroup</xsl:param>
   <xsl:param name="series_string">Series</xsl:param>
   <xsl:param name="subseries_string">Subseries</xsl:param>
+  <xsl:param name="otherlevel_string">Section</xsl:param>
   <xsl:param name="subfonds_string">Subfonds</xsl:param>
   <xsl:param name="file_string">File</xsl:param>
   <xsl:param name="item_string">Item</xsl:param>
@@ -102,6 +103,9 @@
       </xsl:when>
       <xsl:when test="$input = 'subseries'">
         <xsl:value-of select="$subseries_string" />
+      </xsl:when>
+      <xsl:when test="$input = 'otherlevel'">
+        <xsl:value-of select="$otherlevel_string" />
       </xsl:when>
       <xsl:when test="$input = 'subfonds'">
         <xsl:value-of select="$subfonds_string" />

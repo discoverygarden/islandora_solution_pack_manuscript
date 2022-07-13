@@ -41,6 +41,7 @@ function islandora_manuscript_preprocess_ead_display_variables(&$variables) {
     "subgrp_string" => t('Subgroup'),
     "series_string" => t('Series'),
     "subseries_string" => t('Subseries'),
+    "otherlevel_string" => t('Section'),
     "subfonds" => t('Subfonds'),
     "file_string" => t('File'),
     "item_string" => t('Item'),
