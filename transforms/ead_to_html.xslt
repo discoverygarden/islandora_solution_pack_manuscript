@@ -176,6 +176,7 @@
   <xsl:template match="ead:did">
     <xsl:variable name="contents">
       <xsl:call-template name="archdesc_did"/>
+      <xsl:call-template name="eadheader"/>
       <xsl:call-template name="container"/>
     </xsl:variable>
     <xsl:if test="normalize-space($contents)">
@@ -183,6 +184,36 @@
         <xsl:copy-of select="$contents"/>
       </dl>
     </xsl:if>
+    <xsl:if test="not(../../ead:archdesc)">
+      <xsl:for-each select="ead:*[not(self::ead:dao) and not(self::ead:container) and not(self::ead:unitdate) and not(self::ead:unittitle) and not(self::ead:unitid)]">
+        <xsl:choose>
+        <xsl:when test="@label">
+          <h3>
+            <xsl:value-of select="@label" />
+          </h3>
+        </xsl:when>
+        <xsl:otherwise>
+          <h3>
+            <xsl:call-template name="decode_did_child">
+              <xsl:with-param name="input" select="local-name(.)" />
+            </xsl:call-template>
+          </h3>
+        </xsl:otherwise>
+        </xsl:choose>
+        <p>
+          <xsl:attribute name="class">
+            <xsl:text>ead-</xsl:text><xsl:value-of select="local-name(.)" />
+          </xsl:attribute>
+          <xsl:apply-templates />
+        </p>
+      </xsl:for-each>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="ead:extent">
+    <span class="ead-extent">
+      <xsl:apply-templates />
+    </span><xsl:text> </xsl:text>
   </xsl:template>
 
   <!-- helper to translate root did elements into defintion list names -->
@@ -248,6 +279,60 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="eadheader">
+    <xsl:if test="../../ead:archdesc">
+      <xsl:for-each select="//ead:eadheader/ead:filedesc/ead:titlestmt/*[not(self::ead:titleproper)] | //ead:eadheader/ead:filedesc/ead:publicationstmt/*[not(self::ead:p)]">
+        <dt>
+          <xsl:attribute name="class">
+            <xsl:text>ead-</xsl:text><xsl:value-of select="local-name(.)" />
+          </xsl:attribute>
+          <xsl:call-template name="capitalize">
+            <xsl:with-param name="input" select="local-name(.)" />
+          </xsl:call-template>
+        </dt>
+        <dd>
+          <xsl:attribute name="class">
+            <xsl:text>ead-</xsl:text><xsl:value-of select="local-name(.)" />
+          </xsl:attribute>
+          <xsl:apply-templates select="."/>
+        </dd>
+      </xsl:for-each>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="ead:address">
+    <address>
+      <xsl:apply-templates />
+    </address>
+  </xsl:template>
+
+  <xsl:template match="ead:addressline">
+    <xsl:apply-templates /><br />
+  </xsl:template>
+
+  <xsl:template match="ead:extptr">
+    <xsl:choose>
+      <xsl:when test="@xlink:href and @xlink:type = 'simple'">
+        <a>
+          <xsl:attribute name="href">
+            <xsl:value-of select="@xlink:href" />
+          </xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="@xlink:title">
+              <xsl:value-of select="@xlink:title" />
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:value-of select="@xlink:href" />
+            </xsl:otherwise>
+          </xsl:choose>
+        </a>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates />
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
   <!-- build definition list containing container searches. -->
   <xsl:template name="container">
     <xsl:variable name="contents">
@@ -282,7 +367,7 @@
   <xsl:template match="ead:container" mode="flat_text">
     <span>
     <xsl:attribute name="class">
-      <xsl:text>container-target container-type-</xsl:text><xsl:value-of select="@type" />
+      <xsl:text>container-target container-type-</xsl:text><xsl:value-of select="translate(@type, ' ', '-')" />
     </xsl:attribute>
     <xsl:value-of select="@type"/>
     <xsl:text> </xsl:text>
@@ -319,7 +404,7 @@
     </xsl:if>
     <span>
     <xsl:attribute name="class">
-      <xsl:text>container-target container-type-</xsl:text><xsl:value-of select="@type" />
+      <xsl:text>container-target container-type-</xsl:text><xsl:value-of select="translate(@type, ' ', '-')" />
     </xsl:attribute>
     <xsl:value-of select="@type"/>
     <xsl:text> </xsl:text>
@@ -507,7 +592,7 @@
   </xsl:template>
 
   <xsl:template match="ead:p">
-    <p>
+    <p class="ead-p">
       <xsl:apply-templates/>
     </p>
   </xsl:template>
