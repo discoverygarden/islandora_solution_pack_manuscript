@@ -50,6 +50,8 @@ Having problems or solved a problem? Check out the Islandora google groups for a
 ### Q. What elements are necessary in finding aid EAD metadata?
 
 A. Components (`c`, `c01`, `c02`, `c03`, _etc_) *MUST* have `id` attributes unique to the given XML document in order to reliably produce links and relationships. Components *MUST* have a `level` as one of:
+* `recordgrp`
+* `subgrp`
 * `series`
 * `subseries`
 * `file`
