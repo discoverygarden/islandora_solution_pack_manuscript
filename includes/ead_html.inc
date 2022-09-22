@@ -300,7 +300,8 @@ function islandora_manuscript_build_flat_subfile_query(array $containers) {
 }
 
 /**
- * Return the path to the cache of EAD HTML files
+ * Return the path to the cache directory of EAD HTML files
+ * 
  * @return string The path to the files
  */
 function islandora_manuscript_cache_eadhtml_path() {
@@ -309,12 +310,82 @@ function islandora_manuscript_cache_eadhtml_path() {
 
 /**
  * Return the suffix to the cached EAD HTML files
+ * 
  * @return string The suffix to the files
  */
 function islandora_manuscript_cache_eadhtml_suffix() {
   return '.cache';
 }
 
+/**
+ * Return the file path for a cached EAD HTML file
+ * 
+ * @param string $objectid The object's PID
+ * @return string The path of the cache file
+ */
+function islandora_manuscript_cache_eadhtml_file($objectid) {
+  $cachepath = islandora_manuscript_cache_eadhtml_path();
+  return $cachepath.md5($objectid).islandora_manuscript_cache_eadhtml_suffix();
+}
+
+/**
+ * Return the suffix to the expired EAD HTML cache files
+ * 
+ * @return string The suffix to the files
+ */
+function islandora_manuscript_cache_eadhtml_expired_suffix() {
+  return '.expired';
+}
+
+/**
+ * Return the file path for an expired EAD HTML file cache
+ * 
+ * @param string $objectid The object's PID
+ * @return string The path of the expired cache file
+ */
+function islandora_manuscript_cache_eadhtml_expired_file($objectid) {
+  return islandora_manuscript_cache_eadhtml_file($objectid).islandora_manuscript_cache_eadhtml_expired_suffix();
+}
+
+/**
+ * Return whether the current cachefile for an object exists and is valid
+ * 
+ * @param string $objectid The object's PID
+ * @return boolean Whether a valid cachefile exists
+ */
+function islandora_manuscript_cache_check($objectid) {
+  $cachekey = islandora_manuscript_cache_eadhtml_file($objectid);
+  // Get the creation date of the EAD, if possible
+  $eadcreation = null;
+  $object = islandora_object_load($objectid);
+  if (isset($object['EAD']) && $object['EAD']->createdDate) {
+    $eadcreation = $object['EAD']->createdDate->getTimestamp();
+  }
+  return islandora_manuscript_cachefile_check($cachekey, $eadcreation);
+}
+
+/**
+ * Return whether the named cachefile is valid
+ * 
+ * @param string $filename The path and filename of the cachefile
+ * @param int $minimumdate An optional unixdate which the cachefile must not be older than
+ * @return boolean Whether the cachefile is existant and unexpired and more recent than the minimum date
+ */
+function islandora_manuscript_cachefile_check($filename, $minimumdate = null) {
+  if (file_exists($filename)) {
+    $updated = filemtime($filename);
+    if ($minimumdate && $updated < $minimumdate) {
+      // The file is older than allowed
+      return false;
+    }
+    $cachelifespan = strtotime(variable_get('islandora_manuscript_ead_caching', '')) - time();
+    if ($updated + $cachelifespan > time()) {
+      // the modification date + cache duration is in the future
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Get a rendered EAD to HTML transform, indexed by object id
@@ -327,15 +398,24 @@ function islandora_manuscript_getcache_eadhtml($objectid) {
     return false;
   }
   $cached_output = false;
-  $cachepath = islandora_manuscript_cache_eadhtml_path();
-  $cachekey = md5($objectid).islandora_manuscript_cache_eadhtml_suffix();
-  if (file_exists($cachepath.$cachekey)) {
-    $updated = filemtime($cachepath.$cachekey);
-    if ($updated + strtotime(variable_get('islandora_manuscript_ead_caching', '')) - time() > time()) {
-      $cache = file_get_contents($cachepath.$cachekey);
-      if (isset($cache)) {
-        $cached_output = $cache;
-      }
+  $cachekey = islandora_manuscript_cache_eadhtml_file($objectid);
+  $expiredcachekey = islandora_manuscript_cache_eadhtml_expired_file($objectid);
+  if (file_exists($cachekey)) {
+    // Cache file exists
+    $cache = file_get_contents($cachekey);
+    if (!empty($cache)) {
+      $cached_output = $cache;
+    }
+    if (!islandora_manuscript_cache_check($objectid)) {
+      // Cache file is expired
+      copy($cachekey, $expiredcachekey);
+      unlink($cachekey);
+    }
+  } else if (file_exists($expiredcachekey)) {
+    // No current cache file, but expired cache file exists
+    $cache = file_get_contents($expiredcachekey);
+    if (!empty($cache)) {
+      $cached_output = $cache;
     }
   }
   return $cached_output;
@@ -359,7 +439,14 @@ function islandora_manuscript_setcache_eadhtml($objectid, $html) {
   if (!file_exists($cachepath)) {
     mkdir($cachepath);
   }
-  $cachekey = md5($objectid).islandora_manuscript_cache_eadhtml_suffix();
-  return (boolean) file_put_contents($cachepath.$cachekey, $html);
+  $cachekey = islandora_manuscript_cache_eadhtml_file($objectid);
+  if (file_put_contents($cachekey, $html)) {
+    $expiredfile = islandora_manuscript_cache_eadhtml_expired_file($objectid);
+    if (file_exists($expiredfile)) {
+      unlink($expiredfile);
+    }
+    return true;
+  }
+  return false;
 }
 
