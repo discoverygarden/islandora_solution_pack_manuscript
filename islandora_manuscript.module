@@ -660,6 +660,14 @@ function islandora_manuscript_cron() {
   if (variable_get('islandora_manuscript_ead_caching', false)) {
     module_load_include('inc', 'islandora_manuscript', 'includes/ead_html');
     $cachepath = islandora_manuscript_cache_eadhtml_path();
+    // Remove expired cachefiles which have themselves expired (probably for objects which don't exist anymore)
+    $files = glob($cachepath.'*'.islandora_manuscript_cache_eadhtml_expired_suffix());
+    foreach ($files as $file) {
+      if (!islandora_manuscript_cachefile_check($file)) {
+        unlink($file);
+      }
+    }
+    // Expire cachefiles
     $files = glob($cachepath.'*'.islandora_manuscript_cache_eadhtml_suffix());
     foreach ($files as $file) {
       if (!islandora_manuscript_cachefile_check($file)) {
@@ -712,9 +720,13 @@ function islandora_manuscript_cron() {
         $themevars = islandora_manuscript_theme();
         $vars = $themevars['islandora_manuscript_ead_display']['variables'];
         $vars['object'] = islandora_object_load($pid);
-        islandora_manuscript_preprocess_ead_display_variables($vars);
-        islandora_manuscript_process_ead_display_variables($vars);
-        islandora_manuscript_setcache_eadhtml($pid, $vars['rendered_ead_html']);
+        if ($vars['object']) {
+          islandora_manuscript_preprocess_ead_display_variables($vars);
+          islandora_manuscript_process_ead_display_variables($vars);
+          islandora_manuscript_setcache_eadhtml($pid, $vars['rendered_ead_html']);
+        } else {
+          watchdog('islandora_solution_pack_manuscript', 'Failed to load !PID as indexed by Solr.', array('!PID' => $pid), WATCHDOG_WARNING);
+        }
         unset($vars);
       }
     }
