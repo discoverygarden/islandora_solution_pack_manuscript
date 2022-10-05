@@ -205,6 +205,14 @@ function islandora_manuscript_theme() {
       'file' => 'theme/theme.inc',
       'template' => 'theme/islandora-manuscript-ead-display',
     ),
+    'islandora_manuscript_ead_display_failure' => array(
+      'variables' => array(
+        'object' => NULL,
+      ),
+      'file' => 'theme/theme.inc',
+      'template' => 'theme/islandora-manuscript-ead-display-failure',
+    ),
+
   );
 }
 
@@ -643,4 +651,85 @@ EOQ;
       'recurse' => TRUE,
     ),
   );
+}
+
+/**
+ * Implements hook_cron().
+ */
+function islandora_manuscript_cron() {
+  if (variable_get('islandora_manuscript_ead_caching', false)) {
+    module_load_include('inc', 'islandora_manuscript', 'includes/ead_html');
+    $cachepath = islandora_manuscript_cache_eadhtml_path();
+    // Remove expired cachefiles which have themselves expired (probably for objects which don't exist anymore)
+    $files = glob($cachepath.'*'.islandora_manuscript_cache_eadhtml_expired_suffix());
+    foreach ($files as $file) {
+      if (!islandora_manuscript_cachefile_check($file)) {
+        unlink($file);
+      }
+    }
+    // Expire cachefiles
+    $files = glob($cachepath.'*'.islandora_manuscript_cache_eadhtml_suffix());
+    foreach ($files as $file) {
+      if (!islandora_manuscript_cachefile_check($file)) {
+        copy($file, $file.islandora_manuscript_cache_eadhtml_expired_suffix());
+        unlink($file);
+      }
+    }
+    if (module_exists('islandora_solr')) {
+      if (!lock_acquire('cron', 360)) {
+        watchdog('islandora_solution_pack_manuscript', 'Lost cron lock; aborting cache run.', array(), WATCHDOG_WARNING);
+        return;
+      } 
+      module_load_include('inc', 'islandora_solr', 'includes/utilities');
+      // Find any findingAidCModel objects with an EAD datastream
+      $qp = new IslandoraSolrQueryProcessor();
+      $qp->buildQuery('fedora_datastreams_ms:EAD');
+      $qp->solrParams['fq'][] = format_string('!field:("info:fedora/!pid" OR "!pid")', array(
+        '!field' => islandora_solr_lesser_escape(variable_get('islandora_solr_content_model_field', 'RELS_EXT_hasModel_uri_ms')),
+        '!pid' => 'islandora:findingAidCModel',
+      ));
+      $qp->solrParams['fl'] = implode(',', array(
+        'PID',
+      ));
+      $qp->executeQuery();
+      // queue this object, if a cachefile does not already exist
+      $toCache = array();
+      $pageIndex = 0;
+      $numFound = $qp->islandoraSolrResult['response']['numFound'];
+      while ($pageIndex < $numFound - 1) {
+        foreach ($qp->islandoraSolrResult['response']['objects'] as $result) {
+          $pageIndex++;
+          if (!islandora_manuscript_cache_check($result['PID'])) {
+            $toCache[$result['PID']] = $result['PID'];
+          }
+        }
+        if ($pageIndex < $numFound - 1) {
+          $qp->solrStart = $pageIndex;
+          $qp->solrLimit = $numFound;
+          $qp->executeQuery();
+          $numFound = $qp->islandoraSolrResult['response']['numFound'];
+        }
+      }
+      unset($qp);
+      // cache each queued object
+      foreach ($toCache as $pid) {
+        if (!lock_acquire('cron', 360)) {
+          watchdog('islandora_solution_pack_manuscript', 'Lost cron lock; aborting cache creation at !PID .', array('!PID' => $pid), WATCHDOG_WARNING);
+          break;
+        } 
+        $themevars = islandora_manuscript_theme();
+        $vars = $themevars['islandora_manuscript_ead_display']['variables'];
+        $vars['object'] = islandora_object_load($pid);
+        if ($vars['object']) {
+          islandora_manuscript_preprocess_ead_display_variables($vars);
+          $vars['regenerate_rendered_ead_html'] = true;
+          islandora_manuscript_process_ead_display_variables($vars);
+          islandora_manuscript_setcache_eadhtml($pid, $vars['rendered_ead_html']);
+        } else {
+          watchdog('islandora_solution_pack_manuscript', 'Failed to load !PID as indexed by Solr.', array('!PID' => $pid), WATCHDOG_WARNING);
+        }
+        unset($vars);
+      }
+    }
+  }
 }
