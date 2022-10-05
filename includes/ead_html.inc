@@ -62,7 +62,7 @@ function islandora_manuscript_process_ead_display_variables(&$variables) {
   }
   $proc->registerPhpFunctions($variables['xslt_functions']);
   $variables['rendered_ead_html'] = islandora_manuscript_getcache_eadhtml($variables['object']->id);
-  if (!$variables['rendered_ead_html']) {
+  if (!$variables['rendered_ead_html'] || isset($variables['regenerate_rendered_ead_html'])) {
     // TODO: handle this failure more elegantly
     // Pending that, write a default template out to the cache so that when we die unexpectedly in $proc->transformToDoc($variables['doc'])
     // we don't pick up and retry this same object again immediately

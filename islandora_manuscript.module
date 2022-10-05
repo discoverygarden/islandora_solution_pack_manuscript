@@ -722,6 +722,7 @@ function islandora_manuscript_cron() {
         $vars['object'] = islandora_object_load($pid);
         if ($vars['object']) {
           islandora_manuscript_preprocess_ead_display_variables($vars);
+          $vars['regenerate_rendered_ead_html'] = true;
           islandora_manuscript_process_ead_display_variables($vars);
           islandora_manuscript_setcache_eadhtml($pid, $vars['rendered_ead_html']);
         } else {
